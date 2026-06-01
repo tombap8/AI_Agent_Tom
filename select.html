@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>청소당번 룰렛</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        /* 캔버스 드래그 방지 및 터치 최적화 */
+        canvas {
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-4xl flex flex-col md:flex-row gap-8">
+        
+        <!-- 왼쪽 패널: 이름 입력란 -->
+        <div class="w-full md:w-1/3 flex flex-col gap-4">
+            <div class="text-center md:text-left">
+                <h1 class="text-2xl font-bold text-gray-800">🧹 청소당번 룰렛</h1>
+                <p class="text-sm text-gray-500 mt-1">이름을 입력하고 적용하세요.</p>
+            </div>
+            
+            <textarea id="nameInput" rows="10" 
+                      class="w-full border border-gray-300 rounded-lg p-3 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                      placeholder="이름을 입력하세요 (엔터로 구분)">철수
+영희
+민수
+지영</textarea>
+            
+            <button id="applyBtn" 
+                    class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
+                룰렛에 적용
+            </button>
+        </div>
+
+        <!-- 오른쪽 패널: 룰렛 캔버스 및 결과 -->
+        <div class="w-full md:w-2/3 flex flex-col items-center justify-center gap-6">
+            
+            <div class="relative w-full flex justify-center">
+                <canvas id="rouletteCanvas" width="400" height="400" class="max-w-full h-auto"></canvas>
+            </div>
+
+            <div id="resultLabel" class="text-xl font-bold text-blue-600 bg-blue-50 px-6 py-2 rounded-full min-h-[44px] flex items-center">
+                결과: 대기 중
+            </div>
+
+            <button id="startBtn" 
+                    class="w-full md:w-2/3 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold text-xl py-4 px-6 rounded-xl shadow-md transition duration-200 transform hover:scale-105 active:scale-95">
+                시작!
+            </button>
+            
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const canvas = document.getElementById('rouletteCanvas');
+            const ctx = canvas.getContext('2d');
+            const nameInput = document.getElementById('nameInput');
+            const applyBtn = document.getElementById('applyBtn');
+            const startBtn = document.getElementById('startBtn');
+            const resultLabel = document.getElementById('resultLabel');
+
+            let names = [];
+            const colors = ["#FF9999", "#FFCC99", "#FFFF99", "#99FF99", "#99CCFF", "#CC99FF", "#FF99CC", "#99FFFF"];
+            
+            let currentAngle = 0; // 현재 회전 각도 (도 단위)
+            let spinSpeed = 0;    // 회전 속도
+            let isSpinning = false;
+            let animationId;
+
+            // 초기 셋업
+            applyNames();
+
+            // 이벤트 리스너
+            applyBtn.addEventListener('click', applyNames);
+            startBtn.addEventListener('click', spin);
+
+            function applyNames() {
+                if (isSpinning) return;
+                
+                const rawText = nameInput.value;
+                names = rawText.split('\n')
+                               .map(name => name.trim())
+                               .filter(name => name !== '');
+                
+                currentAngle = 0;
+                resultLabel.innerHTML = '결과: 대기 중';
+                resultLabel.className = 'text-xl font-bold text-blue-600 bg-blue-50 px-6 py-2 rounded-full min-h-[44px] flex items-center';
+                
+                drawWheel();
+            }
+
+            function drawWheel() {
+                // 캔버스 초기화
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                const cx = canvas.width / 2;
+                const cy = canvas.height / 2;
+                const r = Math.min(cx, cy) - 25; // 여백 확보
+
+                if (names.length === 0) {
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                    ctx.fillStyle = "#F3F4F6";
+                    ctx.fill();
+                    ctx.strokeStyle = "#D1D5DB";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    
+                    ctx.fillStyle = "#6B7280";
+                    ctx.font = "18px Arial";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText("이름을 추가해주세요", cx, cy);
+                    return;
+                }
+
+                const arcAngle = 360 / names.length;
+
+                for (let i = 0; i < names.length; i++) {
+                    const startAngleDeg = currentAngle + i * arcAngle;
+                    const endAngleDeg = startAngleDeg + arcAngle;
+
+                    const startAngleRad = startAngleDeg * Math.PI / 180;
+                    const endAngleRad = endAngleDeg * Math.PI / 180;
+
+                    // 부채꼴 그리기
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, r, startAngleRad, endAngleRad);
+                    ctx.fillStyle = colors[i % colors.length];
+                    ctx.fill();
+                    ctx.strokeStyle = "#FFFFFF";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    // 텍스트 그리기
+                    ctx.save();
+                    ctx.translate(cx, cy);
+                    const midAngleRad = startAngleRad + (endAngleRad - startAngleRad) / 2;
+                    ctx.rotate(midAngleRad);
+                    
+                    ctx.textAlign = "right";
+                    ctx.textBaseline = "middle";
+                    ctx.fillStyle = "#1F2937";
+                    ctx.font = "bold 16px Arial";
+                    
+                    // 텍스트를 원 테두리에 가깝게 배치
+                    ctx.fillText(names[i], r - 20, 0);
+                    ctx.restore();
+                }
+
+                // 포인터(상단 역삼각형) 그리기
+                ctx.beginPath();
+                ctx.moveTo(cx - 15, cy - r - 15);
+                ctx.lineTo(cx + 15, cy - r - 15);
+                ctx.lineTo(cx, cy - r + 10);
+                ctx.fillStyle = "#EF4444"; // 빨간색
+                ctx.fill();
+                ctx.strokeStyle = "#B91C1C";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 중심점 장식
+                ctx.beginPath();
+                ctx.arc(cx, cy, 15, 0, 2 * Math.PI);
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fill();
+                ctx.strokeStyle = "#D1D5DB";
+                ctx.stroke();
+            }
+
+            function spin() {
+                if (names.length < 2) {
+                    resultLabel.innerHTML = '⚠️ 최소 2명 이상의 이름이 필요합니다!';
+                    resultLabel.className = 'text-xl font-bold text-red-600 bg-red-50 px-6 py-2 rounded-full min-h-[44px] flex items-center';
+                    return;
+                }
+
+                if (isSpinning) return;
+
+                isSpinning = true;
+                startBtn.disabled = true;
+                startBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                
+                resultLabel.innerHTML = '결과: 추첨 중... 🎲';
+                resultLabel.className = 'text-xl font-bold text-gray-600 bg-gray-100 px-6 py-2 rounded-full min-h-[44px] flex items-center';
+
+                // 초기 회전 속도 (20 ~ 30 사이의 랜덤 값)
+                spinSpeed = Math.random() * 10 + 20; 
+                
+                animateSpin();
+            }
+
+            function animateSpin() {
+                if (spinSpeed < 0.1) {
+                    // 회전 정지
+                    isSpinning = false;
+                    startBtn.disabled = false;
+                    startBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    showWinner();
+                    return;
+                }
+
+                currentAngle = (currentAngle + spinSpeed) % 360;
+                drawWheel();
+                
+                // 마찰력 적용하여 감속 (1프레임당 98%의 속도로 줄어듦)
+                spinSpeed *= 0.98;
+                
+                animationId = requestAnimationFrame(animateSpin);
+            }
+
+            function showWinner() {
+                const arcAngle = 360 / names.length;
+                
+                // 포인터는 캔버스 기준 12시 방향(-90도 또는 270도)
+                // 휠 전체의 회전 각도를 고려하여 현재 270도 위치에 있는 조각을 계산
+                let relativeAngle = (270 - currentAngle) % 360;
+                if (relativeAngle < 0) {
+                    relativeAngle += 360;
+                }
+                
+                const winnerIndex = Math.floor(relativeAngle / arcAngle);
+                const winner = names[winnerIndex];
+                
+                resultLabel.innerHTML = `결과: 당첨! 🎉 <span class="text-2xl ml-2 text-red-500">${winner}</span> 🎉`;
+                resultLabel.className = 'text-xl font-bold text-green-700 bg-green-100 px-6 py-2 rounded-full min-h-[44px] flex items-center';
+
+                // 양쪽에서 터지는 빵빠레(꽃가루) 효과
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { x: 0.2, y: 0.6 },
+                    colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+                });
+                confetti({
+                    particleCount: 120,
+                    spread: 80,
+                    origin: { x: 0.8, y: 0.6 },
+                    colors: ['#26ccff', '#a25afd', '#ff5e7e', '#88ff5a', '#fcff42', '#ffa62d', '#ff36ff']
+                });
+            }
+        });
+    </script>
+</body>
+</html>

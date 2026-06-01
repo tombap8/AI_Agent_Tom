@@ -17,6 +17,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
         }
         .todo-container {
             background-color: #ffffff;
@@ -25,7 +26,29 @@
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+            position: relative; /* 상단 홈 버튼 배치를 위한 기준점 */
         }
+
+        /* 메인 허브 이동 링크 스타일 */
+        .nav-header {
+            display: flex;
+            justify-content: flex-start;
+            margin-bottom: 15px;
+        }
+        .home-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #7f8c8d;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .home-link:hover {
+            color: #4a90e2; /* 호버 시 포인트 컬러 전환 */
+        }
+
         h1 {
             color: #333333;
             margin-bottom: 20px;
@@ -85,14 +108,13 @@
             border: 1px solid #efefef;
             border-radius: 6px;
             margin-bottom: 10px;
-            cursor: grab; /* 드래그 가능함을 알리는 마우스 커서 */
+            cursor: grab;
             transition: background-color 0.2s, opacity 0.2s;
-            user-select: none; /* 드래그 시 텍스트 블록 지정 방지 */
+            user-select: none;
         }
         .todo-item:active {
             cursor: grabbing;
         }
-        /* 드래그 중인 아이템 스타일 */
         .todo-item.dragging {
             opacity: 0.5;
             background-color: #e0f0ff;
@@ -108,7 +130,6 @@
             gap: 10px;
             flex: 1;
         }
-        /* 드래그 핸들 아이콘 대체용 */
         .drag-handle {
             color: #ccc;
             margin-right: 5px;
@@ -137,11 +158,40 @@
         .delete-btn:hover {
             background-color: #fadbd8;
         }
+
+        /* 전체 삭제 영역 및 버튼 스타일 추가 */
+        .clear-section {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            border-top: 1px solid #efefef;
+            padding-top: 15px;
+        }
+        #clear-all-btn {
+            background-color: #f2f4f7;
+            color: #e74c3c;
+            border: 1px solid #dcdfe6;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        #clear-all-btn:hover {
+            background-color: #e74c3c;
+            color: #ffffff;
+            border-color: #e74c3c;
+        }
     </style>
 </head>
 <body>
 
 <div class="todo-container">
+    <div class="nav-header">
+        <a href="../index.html" class="home-link">⇠ 메인 대시보드로 가기</a>
+    </div>
+
     <h1>To Do List</h1>
     
     <div class="input-section">
@@ -152,12 +202,15 @@
     <div class="info-text">💡 항목을 드래그하여 순서를 바꿀 수 있음</div>
 
     <ul id="todo-list" class="todo-list"></ul>
+
+    <div id="clear-area"></div>
 </div>
 
 <script>
     const todoInput = document.getElementById('todo-input');
     const addBtn = document.getElementById('add-btn');
     const todoList = document.getElementById('todo-list');
+    const clearArea = document.getElementById('clear-area'); // 전체 삭제 영역 타겟팅 추가
 
     let todos = JSON.parse(localStorage.getItem('todos')) || [];
 
@@ -170,18 +223,15 @@
 
     function addTodo() {
         const taskText = todoInput.value.trim();
-        
         if (taskText === '') {
             alert('할 일을 입력해주세요.');
             return;
         }
-
         const newTodo = {
             id: Date.now(),
             text: taskText,
             completed: false
         };
-
         todos.push(newTodo);
         saveAndRender();
         todoInput.value = '';
@@ -192,15 +242,13 @@
         renderTodos();
     }
 
-    // 화면 렌더링 및 드래그 이벤트 바인딩
     function renderTodos() {
         todoList.innerHTML = '';
-
         todos.forEach((todo, index) => {
             const li = document.createElement('li');
             li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
-            li.draggable = true; // HTML5 드래그 속성 활성화
-            li.dataset.index = index; // 현재 인덱스 저장
+            li.draggable = true;
+            li.dataset.index = index;
 
             li.innerHTML = `
                 <div class="todo-left">
@@ -211,25 +259,46 @@
                 <button class="delete-btn">삭제</button>
             `;
 
-            // 기능 이벤트 바인딩
             const checkbox = li.querySelector('.todo-checkbox');
             checkbox.addEventListener('change', () => toggleTodo(todo.id));
 
             const deleteBtn = li.querySelector('.delete-btn');
             deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
 
-            // 드래그 앤 드롭 이벤트 바인딩
             li.addEventListener('dragstart', handleDragStart);
             li.addEventListener('dragend', handleDragEnd);
 
             todoList.appendChild(li);
         });
-
-        // 리스트 영역 전체에 dragover 이벤트 부여하여 위치 계산
         todoList.addEventListener('dragover', handleDragOver);
+
+        // 전체 삭제 버튼 활성화 여부 제어 로직 추가
+        renderClearAllButton();
     }
 
-    // --- 드래그 앤 드롭 핸들러 함수 정의 ---
+    // 전체 삭제 버튼 동적 렌더링 함수 추가
+    function renderClearAllButton() {
+        if (todos.length > 0) {
+            clearArea.innerHTML = `
+                <div class="clear-section">
+                    <button id="clear-all-btn">전체 삭제</button>
+                </div>
+            `;
+            const clearAllBtn = document.getElementById('clear-all-btn');
+            clearAllBtn.addEventListener('click', clearAllTodos);
+        } else {
+            clearArea.innerHTML = ''; // 저장된 할 일이 없을 경우 공간 비움 처리
+        }
+    }
+
+    // 전체 삭제 기능 실행 함수 추가
+    function clearAllTodos() {
+        if (confirm('등록된 모든 할 일 목록을 삭제하시겠습니까?')) {
+            todos = []; // 데이터 배열 비움
+            saveAndRender(); // 로컬 스토리지 데이터 동기화 및 렌더링
+        }
+    }
+
     let draggedItemIdx = null;
 
     function handleDragStart(e) {
@@ -241,7 +310,6 @@
         this.classList.remove('dragging');
         draggedItemIdx = null;
         
-        // 정렬이 완료된 시점의 DOM 순서를 기반으로 실제 고유 데이터 배열(todos) 순서 재배치
         const currentItems = [...todoList.querySelectorAll('.todo-item')];
         const reorderedTodos = currentItems.map(item => {
             const originIdx = Number(item.dataset.index);
@@ -249,20 +317,17 @@
         });
 
         todos = reorderedTodos;
-        saveAndRender(); // 재정렬 데이터 로컬 스토리지 저장 및 렌더링
+        saveAndRender();
     }
 
     function handleDragOver(e) {
-        e.preventDefault(); // 기본 드롭 제한 동작 막기
+        e.preventDefault();
         const draggingItem = todoList.querySelector('.dragging');
         if (!draggingItem) return;
 
-        // 마우스 커서 위치에 있는 target 아이템 계산 후 삽입 위치 결정
         const siblings = [...todoList.querySelectorAll('.todo-item:not(.dragging)')];
-        
         const nextSibling = siblings.find(sibling => {
             const box = sibling.getBoundingClientRect();
-            // 아이템의 수직 중간 지점을 기준으로 마우스가 위면 해당 아이템 앞에 배치
             return e.clientY <= box.top + box.height / 2;
         });
 
@@ -273,7 +338,6 @@
         }
     }
 
-    // --- 기본 핸들러 기능 ---
     function toggleTodo(id) {
         todos = todos.map(todo => 
             todo.id === id ? { ...todo, completed: !todo.completed } : todo

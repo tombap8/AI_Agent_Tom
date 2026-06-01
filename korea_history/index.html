@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>역사 퀴즈 애플리케이션</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="quiz-container">
+    <header>
+      <h1>역사 탐구 퀴즈</h1>
+      <p id="progress-text">로딩 중...</p>
+    </header>
+
+    <main id="quiz-screen" class="hidden">
+      <div class="question-header">
+        <span id="category-badge">분야</span>
+        <h2 id="question-text">문제 내용</h2>
+      </div>
+      <div id="options-container" class="options">
+        </div>
+      
+      <div class="controls">
+        <button id="prev-btn" class="btn" disabled>이전 문제</button>
+        <button id="next-btn" class="btn">다음 문제</button>
+        <button id="submit-btn" class="btn primary hidden">결과 보기</button>
+      </div>
+    </main>
+
+    <section id="result-screen" class="hidden">
+      <h2>퀴즈 결과</h2>
+      <div id="score-display">0 / 10</div>
+      <div id="result-details">
+        </div>
+      <button id="restart-btn" class="btn primary">다시 풀기</button>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
