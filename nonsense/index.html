@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>두뇌 풀가동! 넌센스 퀴즈</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="quiz-container">
+    <header>
+      <h1>🎉 꿀잼 넌센스 퀴즈 🎉</h1>
+      <p id="progress-text">로딩 중...</p>
+    </header>
+
+    <main id="quiz-screen" class="hidden">
+      <div class="question-header">
+        <h2 id="question-text">문제 내용</h2>
+      </div>
+      
+      <div id="hint-area" class="hidden">
+        💡 <b>힌트:</b> <span id="hint-text"></span>
+      </div>
+
+      <div id="options-container" class="options">
+        </div>
+      
+      <div id="feedback-area" class="hidden"></div>
+
+      <div class="controls">
+        <button id="hint-btn" class="btn warning">힌트 보기</button>
+        <button id="submit-btn" class="btn primary" disabled>정답 확인</button>
+        <button id="next-btn" class="btn secondary hidden">다음 문제 ❯</button>
+      </div>
+    </main>
+
+    <section id="result-screen" class="hidden">
+      <h2>✨ 퀴즈 완료 ✨</h2>
+      <div id="score-display">0 / 5</div>
+      <p id="result-message">결과 메시지</p>
+      <button id="restart-btn" class="btn primary bounce">다시 즐기기 🔄</button>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
