@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom's Drag & Drop To Do List</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .todo-container {
+            background-color: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333333;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        /* 입력창 영역 */
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        #todo-input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 16px;
+            outline: none;
+        }
+        #todo-input:focus {
+            border-color: #4a90e2;
+        }
+        #add-btn {
+            padding: 12px 20px;
+            background-color: #4a90e2;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        #add-btn:hover {
+            background-color: #357abd;
+        }
+
+        /* 안내 문구 */
+        .info-text {
+            font-size: 12px;
+            color: #888888;
+            margin-bottom: 10px;
+            text-align: right;
+        }
+
+        /* 목록 영역 */
+        .todo-list {
+            list-style: none;
+        }
+        .todo-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background-color: #fdfdfd;
+            border: 1px solid #efefef;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            cursor: grab; /* 드래그 가능함을 알리는 마우스 커서 */
+            transition: background-color 0.2s, opacity 0.2s;
+            user-select: none; /* 드래그 시 텍스트 블록 지정 방지 */
+        }
+        .todo-item:active {
+            cursor: grabbing;
+        }
+        /* 드래그 중인 아이템 스타일 */
+        .todo-item.dragging {
+            opacity: 0.5;
+            background-color: #e0f0ff;
+            border: 1px dashed #4a90e2;
+        }
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #aaaaaa;
+        }
+        .todo-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex: 1;
+        }
+        /* 드래그 핸들 아이콘 대체용 */
+        .drag-handle {
+            color: #ccc;
+            margin-right: 5px;
+            font-weight: bold;
+        }
+        .todo-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .todo-text {
+            font-size: 16px;
+            color: #444444;
+            word-break: break-all;
+        }
+        .delete-btn {
+            background-color: transparent;
+            color: #e74c3c;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .delete-btn:hover {
+            background-color: #fadbd8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="todo-container">
+    <h1>To Do List</h1>
+    
+    <div class="input-section">
+        <input type="text" id="todo-input" placeholder="할 일을 입력하세요..." maxlength="50">
+        <button id="add-btn">추가</button>
+    </div>
+
+    <div class="info-text">💡 항목을 드래그하여 순서를 바꿀 수 있음</div>
+
+    <ul id="todo-list" class="todo-list"></ul>
+</div>
+
+<script>
+    const todoInput = document.getElementById('todo-input');
+    const addBtn = document.getElementById('add-btn');
+    const todoList = document.getElementById('todo-list');
+
+    let todos = JSON.parse(localStorage.getItem('todos')) || [];
+
+    renderTodos();
+
+    addBtn.addEventListener('click', addTodo);
+    todoInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addTodo();
+    });
+
+    function addTodo() {
+        const taskText = todoInput.value.trim();
+        
+        if (taskText === '') {
+            alert('할 일을 입력해주세요.');
+            return;
+        }
+
+        const newTodo = {
+            id: Date.now(),
+            text: taskText,
+            completed: false
+        };
+
+        todos.push(newTodo);
+        saveAndRender();
+        todoInput.value = '';
+    }
+
+    function saveAndRender() {
+        localStorage.setItem('todos', JSON.stringify(todos));
+        renderTodos();
+    }
+
+    // 화면 렌더링 및 드래그 이벤트 바인딩
+    function renderTodos() {
+        todoList.innerHTML = '';
+
+        todos.forEach((todo, index) => {
+            const li = document.createElement('li');
+            li.className = `todo-item ${todo.completed ? 'completed' : ''}`;
+            li.draggable = true; // HTML5 드래그 속성 활성화
+            li.dataset.index = index; // 현재 인덱스 저장
+
+            li.innerHTML = `
+                <div class="todo-left">
+                    <span class="drag-handle">☰</span>
+                    <input type="checkbox" class="todo-checkbox" ${todo.completed ? 'checked' : ''}>
+                    <span class="todo-text">${todo.text}</span>
+                </div>
+                <button class="delete-btn">삭제</button>
+            `;
+
+            // 기능 이벤트 바인딩
+            const checkbox = li.querySelector('.todo-checkbox');
+            checkbox.addEventListener('change', () => toggleTodo(todo.id));
+
+            const deleteBtn = li.querySelector('.delete-btn');
+            deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+            // 드래그 앤 드롭 이벤트 바인딩
+            li.addEventListener('dragstart', handleDragStart);
+            li.addEventListener('dragend', handleDragEnd);
+
+            todoList.appendChild(li);
+        });
+
+        // 리스트 영역 전체에 dragover 이벤트 부여하여 위치 계산
+        todoList.addEventListener('dragover', handleDragOver);
+    }
+
+    // --- 드래그 앤 드롭 핸들러 함수 정의 ---
+    let draggedItemIdx = null;
+
+    function handleDragStart(e) {
+        draggedItemIdx = Number(this.dataset.index);
+        this.classList.add('dragging');
+    }
+
+    function handleDragEnd(e) {
+        this.classList.remove('dragging');
+        draggedItemIdx = null;
+        
+        // 정렬이 완료된 시점의 DOM 순서를 기반으로 실제 고유 데이터 배열(todos) 순서 재배치
+        const currentItems = [...todoList.querySelectorAll('.todo-item')];
+        const reorderedTodos = currentItems.map(item => {
+            const originIdx = Number(item.dataset.index);
+            return todos[originIdx];
+        });
+
+        todos = reorderedTodos;
+        saveAndRender(); // 재정렬 데이터 로컬 스토리지 저장 및 렌더링
+    }
+
+    function handleDragOver(e) {
+        e.preventDefault(); // 기본 드롭 제한 동작 막기
+        const draggingItem = todoList.querySelector('.dragging');
+        if (!draggingItem) return;
+
+        // 마우스 커서 위치에 있는 target 아이템 계산 후 삽입 위치 결정
+        const siblings = [...todoList.querySelectorAll('.todo-item:not(.dragging)')];
+        
+        const nextSibling = siblings.find(sibling => {
+            const box = sibling.getBoundingClientRect();
+            // 아이템의 수직 중간 지점을 기준으로 마우스가 위면 해당 아이템 앞에 배치
+            return e.clientY <= box.top + box.height / 2;
+        });
+
+        if (nextSibling) {
+            todoList.insertBefore(draggingItem, nextSibling);
+        } else {
+            todoList.appendChild(draggingItem);
+        }
+    }
+
+    // --- 기본 핸들러 기능 ---
+    function toggleTodo(id) {
+        todos = todos.map(todo => 
+            todo.id === id ? { ...todo, completed: !todo.completed } : todo
+        );
+        saveAndRender();
+    }
+
+    function deleteTodo(id) {
+        todos = todos.filter(todo => todo.id !== id);
+        saveAndRender();
+    }
+</script>
+
+</body>
+</html>

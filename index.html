@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tom's Workspace</title>
+    <style>
+        /* 기본 스타일 초기화 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333333;
+        }
+        
+        /* 메인 카드 컨테이너 */
+        .hub-container {
+            background-color: rgba(255, 255, 255, 0.95);
+            width: 100%;
+            max-width: 480px;
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        /* 프로필 및 타이틀 영역 */
+        .profile-emoji {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: inline-block;
+            animation: float 3s ease-in-out infinite;
+        }
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 35px;
+        }
+
+        /* 앱 링크 카드 스타일 */
+        .app-link-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            border-radius: 12px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+        
+        /* 호버 시 부드러운 유동 효과 */
+        .app-link-card:hover {
+            transform: translateY(-4px);
+            border-color: #4a90e2;
+            box-shadow: 0 8px 20px rgba(74, 144, 226, 0.15);
+        }
+
+        .app-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-align: left;
+        }
+        .app-icon {
+            font-size: 28px;
+            background-color: #f0f7ff;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .app-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 4px;
+        }
+        .app-desc {
+            font-size: 13px;
+            color: #718096;
+        }
+
+        /* 화살표 아이콘 */
+        .arrow-icon {
+            font-size: 18px;
+            color: #a0aec0;
+            transition: transform 0.3s ease;
+        }
+        .app-link-card:hover .arrow-icon {
+            color: #4a90e2;
+            transform: translateX(4px);
+        }
+
+        /* 카피라이트 */
+        .footer {
+            margin-top: 40px;
+            font-size: 12px;
+            color: #b2bec3;
+        }
+
+        /* 위아래로 둥둥 떠 있는 듯한 애니메이션 효과 */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="hub-container">
+    <div class="profile-emoji">🚀</div>
+    <h1>Tom's Workspace</h1>
+    <p class="subtitle">개인 생산성 및 개발 프로젝트 관리 대시보드</p>
+
+    <a href="./ToDoList/index.html" target="_blank" class="app-link-card">
+        <div class="app-info">
+            <span class="app-icon">📝</span>
+            <div>
+                <div class="app-name">To Do List 프로그램</div>
+                <div class="app-desc">드래그 앤 드롭 정렬 기능 포함</div>
+            </div>
+        </div>
+        <span class="arrow-icon">➔</span>
+    </a>
+
+    <div class="footer">
+        © 2026 Tom. All rights reserved.
+    </div>
+</div>
+
+</body>
+</html>
