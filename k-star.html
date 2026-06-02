@@ -331,7 +331,6 @@
                 const wikiList = searchData.query?.search || [];
 
                 // Filter out non-person entries and match up to top 3
-                // We prioritize page titles containing (배우), (가수), (음악가), (모델), (방송인) etc., or matches with exact titles.
                 const filteredList = wikiList.filter(item => {
                     const t = item.title;
                     const ignoreKeywords = ["사건", "사고", "논란", "문서", "역사", "영화", "드라마", "앨범", "음반"];
@@ -552,6 +551,7 @@
                 const imageId = `celeb-img-${idx}`;
                 const containerId = `celeb-frame-${idx}`;
                 const watermarkId = `celeb-wm-${idx}`;
+                const viewportId = `celeb-viewport-${idx}`;
                 
                 const imageSource = celeb.portraitUrl 
                     ? celeb.portraitUrl 
@@ -578,8 +578,8 @@
                         </h3>
                     </div>
 
-                    <!-- Interactive Crop Frame (News Viewport) -->
-                    <div class="relative w-full overflow-hidden rounded-2xl bg-slate-950 border border-slate-900 shadow-inner flex items-center justify-center select-none" style="height: 350px;">
+                    <!-- Interactive Crop Frame (News Viewport) - Default to 3:4 aspect ratio -->
+                    <div id="${viewportId}" class="relative w-full aspect-[3/4] max-w-[340px] mx-auto overflow-hidden rounded-2xl bg-slate-950 border border-slate-900 shadow-inner flex items-center justify-center select-none">
                         <!-- News Watermark Overlay -->
                         <div id="${watermarkId}" class="absolute bottom-4 right-4 z-10 bg-black/40 backdrop-blur px-3 py-1.5 rounded-lg border border-white/10 text-[11px] font-mono tracking-widest text-white/70 font-black pointer-events-none transition-opacity duration-300">
                             © ${celeb.pressName} ALL RIGHTS RESERVED
@@ -595,7 +595,7 @@
                         <div id="${containerId}" class="w-full h-full relative transition-all duration-300 flex items-center justify-center overflow-hidden" style="border-radius: 12px;">
                             <img id="${imageId}" src="${imageSource}" alt="${celeb.name}" 
                                  class="absolute max-w-none transition-transform duration-200 cursor-move" 
-                                 style="transform: scale(1.0) translate(0px, 0px); width: 100%; height: 100%; object-fit: cover;"
+                                 style="transform: scale(1.0) translate(0px, 0px); width: 100%; height: 100%; object-fit: cover; object-position: top;"
                                  onload="initInteractiveCrop('${idx}')"
                                  onerror="handleImageLoadError(this, '${celeb.name}', '${celeb.job}')">
                         </div>
@@ -648,9 +648,10 @@
                                     <span class="text-[11px] text-slate-400">워터마크 출력</span>
                                 </div>
                                 <div class="flex flex-wrap gap-2">
-                                    <button onclick="setFrameShape('${idx}', 'rounded-2xl', '350px', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 hover:bg-indigo-500/30 transition-all font-medium flex-1 cursor-pointer">1:1 스퀘어</button>
-                                    <button onclick="setFrameShape('${idx}', 'rounded-3xl', '220px', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-slate-900 text-slate-300 border border-slate-800 hover:border-indigo-500/30 hover:bg-slate-850 transition-all font-medium flex-1 cursor-pointer">16:9 와이드</button>
-                                    <button onclick="setFrameShape('${idx}', 'rounded-full', '280px', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-slate-900 text-slate-300 border border-slate-800 hover:border-indigo-500/30 hover:bg-slate-850 transition-all font-medium flex-1 cursor-pointer">동그라미 프로필</button>
+                                    <button onclick="setFrameShape('${idx}', 'rounded-2xl', 'aspect-[3/4]', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-indigo-500/20 text-indigo-200 border border-indigo-500/30 hover:bg-indigo-500/30 transition-all font-medium flex-1 cursor-pointer">3:4 세로</button>
+                                    <button onclick="setFrameShape('${idx}', 'rounded-2xl', 'aspect-square', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-slate-900 text-slate-300 border border-slate-800 hover:border-indigo-500/30 hover:bg-slate-850 transition-all font-medium flex-1 cursor-pointer">1:1 스퀘어</button>
+                                    <button onclick="setFrameShape('${idx}', 'rounded-3xl', 'aspect-video', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-slate-900 text-slate-300 border border-slate-800 hover:border-indigo-500/30 hover:bg-slate-850 transition-all font-medium flex-1 cursor-pointer">16:9 와이드</button>
+                                    <button onclick="setFrameShape('${idx}', 'rounded-full', 'aspect-square-circle', event)" class="text-[11px] px-2.5 py-1.5 rounded bg-slate-900 text-slate-300 border border-slate-800 hover:border-indigo-500/30 hover:bg-slate-850 transition-all font-medium flex-1 cursor-pointer">원형 프로필</button>
                                     
                                     <div class="h-6 w-px bg-slate-800 mx-1"></div>
                                     
@@ -815,11 +816,21 @@
             updateImageTransform(idx);
         };
 
-        // Manage container aspect ratios
-        window.setFrameShape = function(idx, borderRadiusClass, frameHeight, event) {
+        // Manage container aspect ratios dynamically using Tailwind's aspect classes
+        window.setFrameShape = function(idx, borderRadiusClass, aspectClass, event) {
+            const viewport = document.getElementById(`celeb-viewport-${idx}`);
             const frame = document.getElementById(`celeb-frame-${idx}`);
-            frame.className = `w-full h-full relative transition-all duration-300 flex items-center justify-center overflow-hidden ${borderRadiusClass}`;
-            frame.parentElement.style.height = frameHeight;
+            
+            // Remove previous aspect ratio classes
+            viewport.classList.remove('aspect-[3/4]', 'aspect-square', 'aspect-video');
+            
+            if (aspectClass === 'aspect-square-circle') {
+                viewport.classList.add('aspect-square');
+                frame.className = `w-full h-full relative transition-all duration-300 flex items-center justify-center overflow-hidden rounded-full`;
+            } else {
+                viewport.classList.add(aspectClass);
+                frame.className = `w-full h-full relative transition-all duration-300 flex items-center justify-center overflow-hidden ${borderRadiusClass}`;
+            }
 
             // Update UI button highlights
             const target = event.currentTarget;
