@@ -18,6 +18,7 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            padding: 0 20px;
             color: #333333;
         }
         
@@ -25,7 +26,7 @@
         .hub-container {
             background-color: rgba(255, 255, 255, 0.95);
             width: 100%;
-            max-width: 480px;
+            max-width: 1400px;
             padding: 40px 30px;
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
@@ -51,6 +52,13 @@
             margin-bottom: 35px;
         }
 
+        .app-links {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
         /* 앱 링크 카드 스타일 */
         .app-link-card {
             display: flex;
@@ -63,6 +71,12 @@
             text-decoration: none;
             transition: all 0.3s ease;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+        }
+
+        @media (max-width: 640px) {
+            .app-links {
+                grid-template-columns: 1fr;
+            }
         }
         
         /* 호버 시 부드러운 유동 효과 */
@@ -128,16 +142,17 @@
     <h1>Tom's Workspace</h1>
     <p class="subtitle">개인 생산성 및 개발 프로젝트 관리 대시보드</p>
 
-    <a href="./coffee_shop/index.html" class="app-link-card">
-        <div class="app-info">
-            <span class="app-icon">📝</span>
-            <div>
-                <div class="app-name">커피 브랜드 샵</div>
-                <div class="app-desc">장바구니 기능 포함</div>
+    <div class="app-links">
+        <a href="./coffee_shop/index.html" target="_blank" class="app-link-card">
+            <div class="app-info">
+                <span class="app-icon">📝</span>
+                <div>
+                    <div class="app-name">커피 브랜드 샵</div>
+                    <div class="app-desc">장바구니 기능 포함</div>
+                </div>
             </div>
-        </div>
-        <span class="arrow-icon">➔</span>
-    </a>
+            <span class="arrow-icon">➔</span>
+        </a>
     <a href="./todolist.html" class="app-link-card">
         <div class="app-info">
             <span class="app-icon">📝</span>
@@ -178,6 +193,7 @@
         </div>
         <span class="arrow-icon">➔</span>
     </a>
+    </div>
 
     <div class="footer">
         © 2026 Tom. All rights reserved.
