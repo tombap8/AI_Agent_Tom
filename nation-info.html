@@ -133,7 +133,7 @@
                     <span>현재 선택된 국가</span>
                 </div>
                 <div class="text-[10px] text-slate-400 mt-1 border-t border-slate-800 pt-1">
-                    * 국가를 클릭하면 옆에 AI 국화 분석 및 실시간 화풍 이미지가 렌더링됩니다.
+                    * 국가를 클릭하면 옆에 실제 꽃 사진, AI 국화 분석 및 실시간 일러스트가 렌더링됩니다.
                 </div>
             </div>
         </div>
@@ -152,7 +152,7 @@
                 </p>
                 <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-800/80 max-w-sm">
                     <p class="text-xs text-slate-400 leading-relaxed text-left">
-                        💡 <strong class="text-emerald-400">Gemini 3.1 AI 탑재:</strong> 각 나라를 선택할 때마다 실시간으로 해당 꽃의 역사 및 상징성을 분석하고, 멋진 수채화 화풍의 꽃 도감을 즉석에서 그려냅니다!
+                        💡 <strong class="text-emerald-400">실시간 웹 이미지 & Gemini AI:</strong> 국화를 클릭하는 즉시 위키백과(Wikipedia)로부터 생생한 원본 식물 사진을 확보하며, AI가 꽃의 역사 및 상징성을 분석합니다!
                     </p>
                 </div>
             </div>
@@ -205,8 +205,11 @@
 
                 <!-- Tab Navigation -->
                 <div class="flex border-b border-slate-800 text-sm font-medium">
-                    <button id="tab-art-btn" class="flex-1 py-3 text-center border-b-2 border-emerald-500 text-emerald-400 font-semibold focus:outline-none transition-all">
-                        <i class="fa-solid fa-palette mr-1.5"></i> 꽃 세밀화 (AI)
+                    <button id="tab-photo-btn" class="flex-1 py-3 text-center border-b-2 border-emerald-500 text-emerald-400 font-semibold focus:outline-none transition-all">
+                        <i class="fa-solid fa-camera mr-1.5"></i> 실제 꽃 사진
+                    </button>
+                    <button id="tab-art-btn" class="flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all">
+                        <i class="fa-solid fa-palette mr-1.5"></i> AI 세밀화
                     </button>
                     <button id="tab-story-btn" class="flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all">
                         <i class="fa-solid fa-book-open mr-1.5"></i> 국화 스토리 (AI)
@@ -216,8 +219,45 @@
                 <!-- Content Area -->
                 <div class="p-6 flex-1 flex flex-col gap-6">
                     
+                    <!-- TAB 0: REAL PHOTO (WIKIPEDIA) -->
+                    <div id="tab-content-photo" class="flex flex-col gap-4">
+                        <div class="relative bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden aspect-square flex items-center justify-center group shadow-inner">
+                            
+                            <!-- Loader -->
+                            <div id="photo-loader" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center z-10">
+                                <div class="relative w-16 h-16 mb-4">
+                                    <div class="absolute inset-0 rounded-full border-4 border-emerald-500/10"></div>
+                                    <div class="absolute inset-0 rounded-full border-4 border-t-emerald-500 animate-spin"></div>
+                                </div>
+                                <p class="text-sm font-bold text-white">실제 꽃 사진 검색 중...</p>
+                                <p class="text-xs text-slate-400 mt-1.5">Wikipedia에서 고품질 보태니컬 라이선스 이미지를 로딩하고 있습니다</p>
+                            </div>
+
+                            <!-- Real Image -->
+                            <img id="flower-real-image" src="" alt="실제 국화 사진" class="w-full h-full object-cover transition-all duration-500 hidden">
+                            
+                            <!-- Fallback UI for Photo -->
+                            <div id="photo-fallback-ui" class="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center p-6 text-center hidden">
+                                <i class="fa-solid fa-image-slash text-slate-500 text-3xl mb-2"></i>
+                                <p class="text-sm text-slate-300 font-semibold mb-1">사진을 직접 찾지 못했습니다</p>
+                                <p class="text-xs text-slate-400">대체 라이브러리 사진을 로드합니다.</p>
+                            </div>
+
+                            <!-- Bottom Floating Prompt Label -->
+                            <div class="absolute bottom-3 left-3 right-3 bg-slate-900/90 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-slate-800 text-xs flex items-center justify-between shadow-lg">
+                                <div class="truncate">
+                                    <span class="text-[10px] text-emerald-400 block font-semibold uppercase">IMAGE SOURCE</span>
+                                    <span class="text-slate-300 italic truncate block">Wikipedia Commons Free License</span>
+                                </div>
+                                <a id="wiki-link-btn" href="#" target="_blank" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-lg border border-slate-700 transition-all flex items-center justify-center" title="위키백과 원문 확인">
+                                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- TAB 1: AI ART WORK -->
-                    <div id="tab-content-art" class="flex flex-col gap-4">
+                    <div id="tab-content-art" class="hidden flex flex-col gap-4">
                         <div class="relative bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden aspect-square flex items-center justify-center group shadow-inner">
                             
                             <!-- Loader -->
@@ -288,105 +328,99 @@
             { name: "캐나다", engName: "Canada", code: "ca", capital: "오타와", flower: "단풍잎", flowerEng: "Maple Leaf", lat: 56.1304, lon: -106.3468, continent: "americas" },
             { name: "영국", engName: "United Kingdom", code: "gb", capital: "런던", flower: "장미", flowerEng: "Tudor Rose", lat: 55.3781, lon: -3.4360, continent: "europe" },
             { name: "프랑스", engName: "France", code: "fr", capital: "파리", flower: "아이리스 (붓꽃)", flowerEng: "Iris", lat: 46.2276, lon: 2.2137, continent: "europe" },
-            { name: "독일", engName: "Germany", code: "de", capital: "베를린", flower: "수레국화", flowerEng: "Cornflower", lat: 51.1657, lon: 10.4515, continent: "europe" },
-            { name: "이탈리아", engName: "Italy", code: "it", capital: "로마", flower: "백합 / 시클라멘", flowerEng: "Lily / Cyclamen", lat: 41.8719, lon: 12.5674, continent: "europe" },
-            { name: "스페인", engName: "Spain", code: "es", capital: "마드리드", flower: "카네이션", flowerEng: "Red Carnation", lat: 40.4637, lon: -3.7492, continent: "europe" },
-            { name: "호주", engName: "Australia", code: "au", capital: "캔버라", flower: "골든 와틀", flowerEng: "Golden Wattle", lat: -25.2744, lon: 133.7751, continent: "oceania" },
-            { name: "브라질", engName: "Brazil", code: "br", capital: "브라질리아", flower: "이페 아마렐로", flowerEng: "Ipe Amarelo", lat: -14.2350, lon: -51.9253, continent: "americas" },
+            { name: "독일", engName: "Germany", code: "de", capital: "베러린", flower: "수레국화", flowerEng: "Cornflower", lat: 51.1657, lon: 10.4515, continent: "europe" },
+            { name: "이탈리아", engName: "Italy", code: "it", capital: "로마", flower: "백합", flowerEng: "Lilium candidum", lat: 41.8719, lon: 12.5674, continent: "europe" },
+            { name: "스페인", engName: "Spain", code: "es", capital: "마드리드", flower: "카네이션", flowerEng: "Carnation", lat: 40.4637, lon: -3.7492, continent: "europe" },
+            { name: "호주", engName: "Australia", code: "au", capital: "캔버라", flower: "골든 와틀", flowerEng: "Acacia pycnantha", lat: -25.2744, lon: 133.7751, continent: "oceania" },
+            { name: "브라질", engName: "Brazil", code: "br", capital: "브라질리아", flower: "이페 아마렐로", flowerEng: "Handroanthus albus", lat: -14.2350, lon: -51.9253, continent: "americas" },
             { name: "인도", engName: "India", code: "in", capital: "뉴델리", flower: "연꽃", flowerEng: "Lotus", lat: 20.5937, lon: 78.9629, continent: "asia" },
             { name: "러시아", engName: "Russia", code: "ru", capital: "모스크바", flower: "카모마일", flowerEng: "Chamomile", lat: 61.5240, lon: 105.3188, continent: "europe" },
-            { name: "남아프리카 공화국", engName: "South Africa", code: "za", capital: "프리토리아", flower: "킹 프로테아", flowerEng: "King Protea", lat: -30.5595, lon: 22.9375, continent: "africa" },
-            { name: "이집트", engName: "Egypt", code: "eg", capital: "카이로", flower: "푸른 연꽃", flowerEng: "Blue Lotus", lat: 26.8206, lon: 30.8025, continent: "africa" },
+            { name: "남아프리카 공화국", engName: "South Africa", code: "za", capital: "프리토리아", flower: "킹 프로테아", flowerEng: "Protea cynaroides", lat: -30.5595, lon: 22.9375, continent: "africa" },
+            { name: "이집트", engName: "Egypt", code: "eg", capital: "카이로", flower: "푸른 연꽃", flowerEng: "Nymphaea caerulea", lat: 26.8206, lon: 30.8025, continent: "africa" },
             { name: "멕시코", engName: "Mexico", code: "mx", capital: "멕시코시티", flower: "다리아", flowerEng: "Dahlia", lat: 23.6345, lon: -102.5528, continent: "americas" },
-            { name: "아르헨티나", engName: "Argentina", code: "ar", capital: "부엔오스아이레스", flower: "세이보", flowerEng: "Ceibo", lat: -38.4161, lon: -63.6167, continent: "americas" },
-            { name: "뉴질랜드", engName: "New Zealand", code: "nz", capital: "웰링턴", flower: "코화이", flowerEng: "Kowhai", lat: -40.9006, lon: 174.8860, continent: "oceania" },
+            { name: "아르헨티나", engName: "Argentina", code: "ar", capital: "부엔오스아이레스", flower: "세이보", flowerEng: "Erythrina crista-galli", lat: -38.4161, lon: -63.6167, continent: "americas" },
+            { name: "뉴질랜드", engName: "New Zealand", code: "nz", capital: "웰링턴", flower: "코화이", flowerEng: "Sophora microphylla", lat: -40.9006, lon: 174.8860, continent: "oceania" },
             { name: "베트남", engName: "Vietnam", code: "vn", capital: "하노이", flower: "연꽃", flowerEng: "Lotus", lat: 14.0583, lon: 108.2772, continent: "asia" },
-            { name: "태국", engName: "Thailand", code: "th", capital: "방콕", flower: "라차프룩 (골든샤워)", flowerEng: "Ratchaphruek", lat: 15.8700, lon: 100.9925, continent: "asia" },
+            { name: "태국", engName: "Thailand", code: "th", capital: "방콕", flower: "라차프룩", flowerEng: "Cassia fistula", lat: 15.8700, lon: 100.9925, continent: "asia" },
             { name: "싱가포르", engName: "Singapore", code: "sg", capital: "싱가포르", flower: "반다 미스 조아킴", flowerEng: "Vanda Miss Joaquim", lat: 1.3521, lon: 103.8198, continent: "asia" },
-            { name: "필리핀", engName: "Philippines", code: "ph", capital: "마닐라", flower: "삼파기타 (자스민)", flowerEng: "Sampaguita", lat: 12.8797, lon: 121.7740, continent: "asia" },
-            { name: "인도네시아", engName: "Indonesia", code: "id", capital: "자카르타", flower: "자스민", flowerEng: "Melati Putih", lat: -0.7893, lon: 113.9213, continent: "asia" },
-            { name: "말레이시아", engName: "Malaysia", code: "my", capital: "쿠알라룸푸르", flower: "하이브리드 히비스커스", flowerEng: "Bunga Raya", lat: 4.2105, lon: 101.9758, continent: "asia" },
+            { name: "필리핀", engName: "Philippines", code: "ph", capital: "마닐라", flower: "삼파기타", flowerEng: "Jasminum sambac", lat: 12.8797, lon: 121.7740, continent: "asia" },
+            { name: "인도네시아", engName: "Indonesia", code: "id", capital: "자카르타", flower: "자스민", flowerEng: "Jasminum sambac", lat: -0.7893, lon: 113.9213, continent: "asia" },
+            { name: "말레이시아", engName: "Malaysia", code: "my", capital: "쿠알라룸푸르", flower: "하이브리드 히비스커스", flowerEng: "Hibiscus rosa-sinensis", lat: 4.2105, lon: 101.9758, continent: "asia" },
             { name: "네덜란드", engName: "Netherlands", code: "nl", capital: "암스테르담", flower: "튤립", flowerEng: "Tulip", lat: 52.1326, lon: 5.2913, continent: "europe" },
-            { name: "스위스", engName: "Switzerland", code: "ch", capital: "베른", flower: "에델바이스", flowerEng: "Edelweiss", lat: 46.8182, lon: 8.2275, continent: "europe" },
-            { name: "스웨덴", engName: "Sweden", code: "se", capital: "스톡홀름", flower: "린네풀", flowerEng: "Twinflower", lat: 60.1282, lon: 18.6435, continent: "europe" },
-            { name: "노르웨이", engName: "Norway", code: "no", capital: "오슬로", flower: "보라색 헤더", flowerEng: "Purple Heather", lat: 60.4720, lon: 8.4689, continent: "europe" },
-            { name: "핀란드", engName: "Finland", code: "fi", capital: "헬싱키", flower: "은방울꽃", flowerEng: "Lily of the Valley", lat: 61.9241, lon: 25.7482, continent: "europe" },
-            { name: "덴마크", engName: "Denmark", code: "dk", capital: "코펜하겐", flower: "마가렛 데이지", flowerEng: "Marguerite Daisy", lat: 56.2639, lon: 9.5018, continent: "europe" },
+            { name: "스위스", engName: "Switzerland", code: "ch", capital: "베른", flower: "에델바이스", flowerEng: "Leontopodium nivale", lat: 46.8182, lon: 8.2275, continent: "europe" },
+            { name: "스웨덴", engName: "Sweden", code: "se", capital: "스톡홀름", flower: "린네풀", flowerEng: "Linnaea borealis", lat: 60.1282, lon: 18.6435, continent: "europe" },
+            { name: "노르웨이", engName: "Norway", code: "no", capital: "오슬로", flower: "보라색 헤더", flowerEng: "Calluna vulgaris", lat: 60.4720, lon: 8.4689, continent: "europe" },
+            { name: "핀란드", engName: "Finland", code: "fi", capital: "헬싱키", flower: "은방울꽃", flowerEng: "Convallaria majalis", lat: 61.9241, lon: 25.7482, continent: "europe" },
+            { name: "덴마크", engName: "Denmark", code: "dk", capital: "코펜하겐", flower: "마가렛 데이지", flowerEng: "Argyranthemum frutescens", lat: 56.2639, lon: 9.5018, continent: "europe" },
             { name: "아일랜드", engName: "Ireland", code: "ie", capital: "더블린", flower: "토끼풀", flowerEng: "Shamrock", lat: 53.4129, lon: -8.2439, continent: "europe" },
             { name: "터키", engName: "Turkey", code: "tr", capital: "앙카라", flower: "튤립", flowerEng: "Tulip", lat: 38.9637, lon: 35.2433, continent: "asia" },
-            { name: "그리스", engName: "Greece", code: "gr", capital: "아테네", flower: "아칸서스", flowerEng: "Acanthus", lat: 39.0742, lon: 21.8243, continent: "europe" },
-            { name: "폴란드", engName: "Poland", code: "pl", capital: "바르샤바", flower: "개양귀비", flowerEng: "Corn Poppy", lat: 51.9194, lon: 19.1451, continent: "europe" },
+            { name: "그리스", engName: "Greece", code: "gr", capital: "아테네", flower: "아칸서스", flowerEng: "Acanthus mollis", lat: 39.0742, lon: 21.8243, continent: "europe" },
+            { name: "폴란드", engName: "Poland", code: "pl", capital: "바르샤바", flower: "개양귀비", flowerEng: "Papaver rhoeas", lat: 51.9194, lon: 19.1451, continent: "europe" },
             { name: "우크라이나", engName: "Ukraine", code: "ua", capital: "키이우", flower: "해바라기", flowerEng: "Sunflower", lat: 48.3794, lon: 31.1656, continent: "europe" },
-            { name: "오스트리아", engName: "Austria", code: "at", capital: "비엔나", flower: "에델바이스", flowerEng: "Edelweiss", lat: 47.5162, lon: 14.5501, continent: "europe" },
-            { name: "벨기에", engName: "Belgium", code: "be", capital: "브뤼셀", flower: "붉은 양귀비", flowerEng: "Red Poppy", lat: 50.5039, lon: 4.4699, continent: "europe" },
+            { name: "오스트리아", engName: "Austria", code: "at", capital: "비엔나", flower: "에델바이스", flowerEng: "Leontopodium nivale", lat: 47.5162, lon: 14.5501, continent: "europe" },
+            { name: "벨기에", engName: "Belgium", code: "be", capital: "브뤼셀", flower: "붉은 양귀비", flowerEng: "Papaver rhoeas", lat: 50.5039, lon: 4.4699, continent: "europe" },
             { name: "포르투갈", engName: "Portugal", code: "pt", capital: "리스본", flower: "라벤더", flowerEng: "Lavender", lat: 39.3999, lon: -8.2245, continent: "europe" },
-            { name: "사우디아라비아", engName: "Saudi Arabia", code: "sa", capital: "리야드", flower: "아르파즈", flowerEng: "Arfaj", lat: 23.8859, lon: 45.0792, continent: "asia" },
-            { name: "이스라엘", engName: "Israel", code: "il", capital: "예루살렘", flower: "시클라멘", flowerEng: "Cyclamen", lat: 31.0461, lon: 34.8516, continent: "asia" },
+            { name: "사우디아라비아", engName: "Saudi Arabia", code: "sa", capital: "리야드", flower: "아르파즈", flowerEng: "Tripleurospermum", lat: 23.8859, lon: 45.0792, continent: "asia" },
+            { name: "이스라엘", engName: "Israel", code: "il", capital: "예루살렘", flower: "시클라멘", flowerEng: "Cyclamen persicum", lat: 31.0461, lon: 34.8516, continent: "asia" },
             { name: "이란", engName: "Iran", code: "ir", capital: "테헤란", flower: "붉은 장미", flowerEng: "Red Rose", lat: 32.4279, lon: 53.6880, continent: "asia" },
             { name: "이라크", engName: "Iraq", code: "iq", capital: "바그다드", flower: "장미", flowerEng: "Rose", lat: 33.2232, lon: 43.6793, continent: "asia" },
-            { name: "아랍에미리트", engName: "UAE", code: "ae", capital: "아부다비", flower: "자리브 (남방납작잎풀)", flowerEng: "Tribulus", lat: 23.4241, lon: 53.8478, continent: "asia" },
-            { name: "칠레", engName: "Chile", code: "cl", capital: "산티아고", flower: "코피우에", flowerEng: "Copihue", lat: -35.6751, lon: -71.5430, continent: "americas" },
-            { name: "콜롬비아", engName: "Colombia", code: "co", capital: "보고타", flower: "카틀레야 오키드", flowerEng: "Cattleya Orchid", lat: 4.5709, lon: -74.2973, continent: "americas" },
-            { name: "페루", engName: "Peru", code: "pe", capital: "리마", flower: "칸투아", flowerEng: "Cantua", lat: -9.1900, lon: -75.0152, continent: "americas" },
-            { name: "베네수엘라", engName: "Venezuela", code: "ve", capital: "카라카스", flower: "오키드", flowerEng: "Orchid", lat: 6.4238, lon: -66.5897, continent: "americas" },
-            { name: "에콰도르", engName: "Ecuador", code: "ec", capital: "키토", flower: "추키라과", flowerEng: "Chuquiragua", lat: -1.8312, lon: -78.1834, continent: "americas" },
-            { name: "볼리비아", engName: "Bolivia", code: "bo", capital: "수크레", flower: "칸투타", flowerEng: "Kantuta", lat: -16.2902, lon: -63.5887, continent: "americas" },
-            { name: "파라과이", engName: "Paraguay", code: "py", capital: "아순시온", flower: "시계꽃", flowerEng: "Passion Flower", lat: -23.4425, lon: -58.4438, continent: "americas" },
-            { name: "우루과이", engName: "Uruguay", code: "uy", capital: "몬테비데오", flower: "세이보", flowerEng: "Ceibo", lat: -32.5228, lon: -55.7658, continent: "americas" },
-            { name: "쿠바", engName: "Cuba", code: "cu", capital: "아바나", flower: "마리포사", flowerEng: "Mariposa", lat: 21.5218, lon: -77.7812, continent: "americas" },
-            { name: "자메이카", engName: "Jamaica", code: "jm", capital: "킹스턴", flower: "가이악 나무꽃 (생명의 나무)", flowerEng: "Lignum Vitae", lat: 18.1096, lon: -77.2975, continent: "americas" },
-            { name: "코스타리카", engName: "Costa Rica", code: "cr", capital: "산호세", flower: "과리아 모라다", flowerEng: "Guaria Morada", lat: 9.7489, lon: -83.7534, continent: "americas" },
-            { name: "파나마", engName: "Panama", code: "pa", capital: "파나마시티", flower: "성령 난초", flowerEng: "Holy Ghost Orchid", lat: 8.5380, lon: -80.7821, continent: "americas" },
-            { name: "케냐", engName: "Kenya", code: "ke", capital: "나이로비", flower: "난초", flowerEng: "Orchid", lat: -0.0236, lon: 37.9062, continent: "africa" },
-            { name: "나이지리아", engName: "Nigeria", code: "ng", capital: "아부자", flower: "노란 나팔꽃", flowerEng: "Yellow Trumpet Flower", lat: 9.0820, lon: 8.6753, continent: "africa" },
-            { name: "모로코", engName: "Morocco", code: "ma", capital: "라바트", flower: "장미", flowerEng: "Rose", lat: 31.7917, lon: -7.0926, continent: "africa" },
-            { name: "에티오피아", engName: "Ethiopia", code: "et", capital: "아디스아바바", flower: "칼라 릴리", flowerEng: "Calla Lily", lat: 9.1450, lon: 40.4897, continent: "africa" },
-            { name: "가나", engName: "Ghana", code: "gh", capital: "아크라", flower: "조가비 꽃", flowerEng: "Calabash Flower", lat: 7.9465, lon: -1.0232, continent: "africa" },
-            { name: "마다가스카르", engName: "Madagascar", code: "mg", capital: "안타나나리보", flower: "포인시아나", flowerEng: "Poinciana", lat: -18.7669, lon: 46.8691, continent: "africa" },
+            { name: "아랍에미리트", engName: "UAE", code: "ae", capital: "아부다비", flower: "자리브 (남방납작잎풀)", flowerEng: "Tribulus terrestris", lat: 23.4241, lon: 53.8478, continent: "asia" },
+            { name: "칠레", engName: "Chile", code: "cl", capital: "산티아고", flower: "코피우에", flowerEng: "Lapageria rosea", lat: -35.6751, lon: -71.5430, continent: "americas" },
+            { name: "콜롬비아", engName: "Colombia", code: "co", capital: "보고타", flower: "카틀레야 오키드", flowerEng: "Cattleya trianae", lat: 4.5709, lon: -74.2973, continent: "americas" },
+            { name: "페루", engName: "Peru", code: "pe", capital: "리마", flower: "칸투아", flowerEng: "Cantua buxifolia", lat: -9.1900, lon: -75.0152, continent: "americas" },
+            { name: "베네수엘라", engName: "Venezuela", code: "ve", capital: "카라카스", flower: "오키드", flowerEng: "Cattleya mossiae", lat: 6.4238, lon: -66.5897, continent: "americas" },
+            { name: "에콰도르", engName: "Ecuador", code: "ec", capital: "키토", flower: "추키라과", flowerEng: "Chuquiraga jancii", lat: -1.8312, lon: -78.1834, continent: "americas" },
+            { name: "볼리비아", engName: "Bolivia", code: "bo", capital: "수크레", flower: "칸투타", flowerEng: "Cantua buxifolia", lat: -16.2902, lon: -63.5887, continent: "americas" },
+            { name: "파라과이", engName: "Paraguay", code: "py", capital: "아순시온", flower: "시계꽃", flowerEng: "Passiflora", lat: -23.4425, lon: -58.4438, continent: "americas" },
+            { name: "우루과이", engName: "Uruguay", code: "uy", capital: "몬테비데오", flower: "세이보", flowerEng: "Erythrina crista-galli", lat: -32.5228, lon: -55.7658, continent: "americas" },
+            { name: "쿠바", engName: "Cuba", code: "cu", capital: "아바나", flower: "마리포사", flowerEng: "Hedychium coronarium", lat: 21.5218, lon: -77.7812, continent: "americas" },
+            { name: "자메이카", engName: "Jamaica", code: "jm", capital: "킹스턴", flower: "가이악 나무꽃", flowerEng: "Guaiacum officinale", lat: 18.1096, lon: -77.2975, continent: "americas" },
+            { name: "코스타리카", engName: "Costa Rica", code: "cr", capital: "산호세", flower: "과리아 모라다", flowerEng: "Guarianthe skinneri", lat: 9.7489, lon: -83.7534, continent: "americas" },
+            { name: "파나마", engName: "Panama", code: "pa", capital: "파나마시티", flower: "성령 난초", flowerEng: "Peristeria elata", lat: 8.5380, lon: -80.7821, continent: "americas" },
+            { name: "케냐", engName: "Kenya", code: "ke", capital: "나이로비", flower: "난초", flowerEng: "Orchidaceae", lat: -0.0236, lon: 37.9062, continent: "africa" },
+            { name: "나이지리아", engName: "Nigeria", code: "ng", capital: "아부자", flower: "노란 나팔꽃", flowerEng: "Costus spectabilis", lat: 9.0820, lon: 8.6753, continent: "africa" },
+            { name: "모로코", engName: "Morocco", code: "ma", capital: "라바트", flower: "장미", flowerEng: "Rosa", lat: 31.7917, lon: -7.0926, continent: "africa" },
+            { name: "에티오피아", engName: "Ethiopia", code: "et", capital: "아디스아바바", flower: "칼라 릴리", flowerEng: "Zantedeschia aethiopica", lat: 9.1450, lon: 40.4897, continent: "africa" },
+            { name: "가나", engName: "Ghana", code: "gh", capital: "아크라", flower: "조가비 꽃", flowerEng: "Talbotiella gentii", lat: 7.9465, lon: -1.0232, continent: "africa" },
+            { name: "마다가스카르", engName: "Madagascar", code: "mg", capital: "안타나나리보", flower: "포인시아나", flowerEng: "Delonix regia", lat: -18.7669, lon: 46.8691, continent: "africa" },
             { name: "알제리", engName: "Algeria", code: "dz", capital: "알제", flower: "붓꽃", flowerEng: "Iris", lat: 28.0339, lon: 1.6596, continent: "africa" },
-            { name: "튀니지", engName: "Tunisia", code: "tn", capital: "튜니스", flower: "자스민", flowerEng: "Jasmine", lat: 33.8869, lon: 9.5375, continent: "africa" },
-            { name: "세네갈", engName: "Senegal", code: "sn", capital: "다카르", flower: "바오밥 꽃", flowerEng: "Baobab Flower", lat: 14.4974, lon: -14.4524, continent: "africa" },
-            { name: "탄자니아", engName: "Tanzania", code: "tz", capital: "도도마", flower: "정향 꽃", flowerEng: "Cloves Flower", lat: -6.3690, lon: 34.8888, continent: "africa" },
-            { name: "우간다", engName: "Uganda", code: "ug", capital: "캄팔라", flower: "관학 꽃 (크레스티드 크레인)", flowerEng: "Crested Crane Flower", lat: 1.3733, lon: 32.2903, continent: "africa" },
-            { name: "짐바브웨", engName: "Zimbabwe", code: "zw", capital: "하라레", flower: "글로리오사 난초", flowerEng: "Flame Lily", lat: -19.0154, lon: 29.1549, continent: "africa" },
-            { name: "피지", engName: "Fiji", code: "fj", capital: "수바", flower: "타기모우시아", flowerEng: "Tagimoucia", lat: -17.7134, lon: 178.0650, continent: "oceania" },
-            { name: "파푸아뉴기니", engName: "Papua New Guinea", code: "pg", capital: "포트모르즈비", flower: "난초", flowerEng: "Orchid", lat: -6.3150, lon: 143.9555, continent: "oceania" },
+            { name: "튀니지", engName: "Tunisia", code: "tn", capital: "튜니스", flower: "자스민", flowerEng: "Jasminum", lat: 33.8869, lon: 9.5375, continent: "africa" },
+            { name: "세네갈", engName: "Senegal", code: "sn", capital: "다카르", flower: "바오밥 꽃", flowerEng: "Adansonia", lat: 14.4974, lon: -14.4524, continent: "africa" },
+            { name: "탄자니아", engName: "Tanzania", code: "tz", capital: "도도마", flower: "정향 꽃", flowerEng: "Syzygium aromaticum", lat: -6.3690, lon: 34.8888, continent: "africa" },
+            { name: "우간다", engName: "Uganda", code: "ug", capital: "캄팔라", flower: "관학 꽃", flowerEng: "Balearica regulorum", lat: 1.3733, lon: 32.2903, continent: "africa" },
+            { name: "짐바브웨", engName: "Zimbabwe", code: "zw", capital: "하라레", flower: "글로리오사 난초", flowerEng: "Gloriosa superba", lat: -19.0154, lon: 29.1549, continent: "africa" },
+            { name: "피지", engName: "Fiji", code: "fj", capital: "수바", flower: "타기모우시아", flowerEng: "Medinilla waterhousei", lat: -17.7134, lon: 178.0650, continent: "oceania" },
+            { name: "파푸아뉴기니", engName: "Papua New Guinea", code: "pg", capital: "포트모르즈비", flower: "난초", flowerEng: "Dendrobium", lat: -6.3150, lon: 143.9555, continent: "oceania" },
             { name: "헝가리", engName: "Hungary", code: "hu", capital: "부다페스트", flower: "제라늄", flowerEng: "Geranium", lat: 47.1625, lon: 19.5033, continent: "europe" },
-            { name: "체코", engName: "Czechia", code: "cz", capital: "프라하", flower: "참피나무 꽃 (린덴)", flowerEng: "Linden Flower", lat: 49.8175, lon: 15.4730, continent: "europe" },
-            { name: "루마니아", engName: "Romania", code: "ro", capital: "부쿠레슈티", flower: "개장미 (도그로즈)", flowerEng: "Dog Rose", lat: 45.9432, lon: 24.9668, continent: "europe" },
-            { name: "불가리아", engName: "Bulgaria", code: "bg", capital: "소피아", flower: "장미", flowerEng: "Rose", lat: 42.7339, lon: 25.4858, continent: "europe" },
-            { name: "크로아티아", engName: "Croatia", code: "hr", capital: "자그레브", flower: "크로아티아 붓꽃", flowerEng: "Iris Croatica", lat: 45.1000, lon: 15.2000, continent: "europe" },
-            { name: "방글라데시", engName: "Bangladesh", code: "bd", capital: "다카", flower: "수련", flowerEng: "Water Lily", lat: 23.6850, lon: 90.3563, continent: "asia" },
+            { name: "체코", engName: "Czechia", code: "cz", capital: "프라하", flower: "참피나무 꽃 (린덴)", flowerEng: "Tilia", lat: 49.8175, lon: 15.4730, continent: "europe" },
+            { name: "루마니아", engName: "Romania", code: "ro", capital: "부쿠레슈티", flower: "개장미 (도그로즈)", flowerEng: "Rosa canina", lat: 45.9432, lon: 24.9668, continent: "europe" },
+            { name: "불가리아", engName: "Bulgaria", code: "bg", capital: "소피아", flower: "장미", flowerEng: "Rosa damascena", lat: 42.7339, lon: 25.4858, continent: "europe" },
+            { name: "크로아티아", engName: "Croatia", code: "hr", capital: "자그레브", flower: "크로아티아 붓꽃", flowerEng: "Iris croatica", lat: 45.1000, lon: 15.2000, continent: "europe" },
+            { name: "방글라데시", engName: "Bangladesh", code: "bd", capital: "다카", flower: "수련", flowerEng: "Nymphaea nouchali", lat: 23.6850, lon: 90.3563, continent: "asia" },
             { name: "네팔", engName: "Nepal", code: "np", capital: "카트만두", flower: "석남화 (만병초)", flowerEng: "Rhododendron", lat: 28.3949, lon: 84.1240, continent: "asia" },
-            { name: "스리랑카", engName: "Sri Lanka", code: "lk", capital: "콜롬보", flower: "푸른 수련", flowerEng: "Blue Water Lily", lat: 7.8731, lon: 80.7718, continent: "asia" },
-            { name: "파키스탄", engName: "Pakistan", code: "pk", capital: "이스라마바드", flower: "자스민", flowerEng: "Jasmine", lat: 30.3753, lon: 69.3451, continent: "asia" },
-            { name: "몽골", engName: "Mongolia", code: "mn", capital: "울란바토르", flower: "스카비오사 (체꽃)", flowerEng: "Scabiosa", lat: 46.8625, lon: 103.8467, continent: "asia" },
-            { name: "우즈베키스탄", engName: "Uzbekistan", code: "uz", capital: "타슈켄트", flower: "목화 꽃", flowerEng: "Cotton Flower", lat: 41.3775, lon: 64.5853, continent: "asia" },
-            { name: "카자흐스탄", engName: "Kazakhstan", code: "kz", capital: "아스타나", flower: "야생 백합", flowerEng: "Wild Lily", lat: 48.0196, lon: 66.9237, continent: "asia" },
-            { name: "아이슬란드", engName: "Iceland", code: "is", capital: "레이캬비크", flower: "담자리꽃나무", flowerEng: "Mountain Avens", lat: 64.9631, lon: -19.0208, continent: "europe" },
-            { name: "에스토니아", engName: "Estonia", code: "ee", capital: "탈린", flower: "수레국화", flowerEng: "Cornflower", lat: 58.5953, lon: 25.0136, continent: "europe" },
-            { name: "라트비아", engName: "Latvia", code: "lv", capital: "리가", flower: "데이지", flowerEng: "Oxeye Daisy", lat: 56.8796, lon: 24.6032, continent: "europe" },
-            { name: "리투아니아", engName: "Lithuania", code: "lt", capital: "빌뉴스", flower: "운향", flowerEng: "Rue", lat: 55.1694, lon: 23.8813, continent: "europe" },
-            { name: "슬로바키아", engName: "Slovakia", code: "sk", capital: "브라티슬라바", flower: "참피나무 꽃 (린덴)", flowerEng: "Linden Flower", lat: 48.6690, lon: 19.6990, continent: "europe" },
-            { name: "슬로베니아", engName: "Slovenia", code: "si", capital: "류블랴나", flower: "카네이션", flowerEng: "Carnation", lat: 46.1512, lon: 14.9955, continent: "europe" },
-            { name: "핀란드", engName: "Finland", code: "fi", capital: "헬싱키", flower: "은방울꽃", flowerEng: "Lily of the Valley", lat: 61.9241, lon: 25.7482, continent: "europe" },
-            { name: "스위스", engName: "Switzerland", code: "ch", capital: "베른", flower: "에델바이스", flowerEng: "Edelweiss", lat: 46.8182, lon: 8.2275, continent: "europe" },
-            { name: "오스트레일리아", engName: "Australia", code: "au", capital: "캔버라", flower: "골든 와틀", flowerEng: "Golden Wattle", lat: -25.2744, lon: 133.7751, continent: "oceania" },
-            { name: "미얀마", engName: "Myanmar", code: "mm", capital: "네피도", flower: "파두크", flowerEng: "Paduak", lat: 21.9162, lon: 95.9560, continent: "asia" },
-            { name: "캄보디아", engName: "Cambodia", code: "kh", capital: "프놈펜", flower: "롬둘", flowerEng: "Rumdul", lat: 12.5657, lon: 104.9910, continent: "asia" },
-            { name: "대만", engName: "Taiwan", code: "tw", capital: "타이베이", flower: "매화", flowerEng: "Plum Blossom", lat: 23.6978, lon: 120.9605, continent: "asia" },
-            { name: "방글라데시", engName: "Bangladesh", code: "bd", capital: "다카", flower: "하얀 수련", flowerEng: "White Water Lily", lat: 23.6850, lon: 90.3563, continent: "asia" },
-            { name: "바하마", engName: "Bahamas", code: "bs", capital: "나소", flower: "옐로우 엘더", flowerEng: "Yellow Elder", lat: 25.0343, lon: -77.3963, continent: "americas" },
+            { name: "스리랑카", engName: "Sri Lanka", code: "lk", capital: "콜롬보", flower: "푸른 수련", flowerEng: "Nymphaea nouchali", lat: 7.8731, lon: 80.7718, continent: "asia" },
+            { name: "파키스탄", engName: "Pakistan", code: "pk", capital: "이스라마바드", flower: "자스민", flowerEng: "Jasminum officinale", lat: 30.3753, lon: 69.3451, continent: "asia" },
+            { name: "몽골", engName: "Mongolia", code: "mn", capital: "울란바토르", flower: "스카비오사 (체꽃)", flowerEng: "Scabiosa comosa", lat: 46.8625, lon: 103.8467, continent: "asia" },
+            { name: "우즈베키스탄", engName: "Uzbekistan", code: "uz", capital: "타슈켄트", flower: "목화 꽃", flowerEng: "Gossypium", lat: 41.3775, lon: 64.5853, continent: "asia" },
+            { name: "카자흐스탄", engName: "Kazakhstan", code: "kz", capital: "아스타나", flower: "야생 백합", flowerEng: "Tulipa", lat: 48.0196, lon: 66.9237, continent: "asia" },
+            { name: "아이슬란드", engName: "Iceland", code: "is", capital: "레이캬비크", flower: "담자리꽃나무", flowerEng: "Dryas octopetala", lat: 64.9631, lon: -19.0208, continent: "europe" },
+            { name: "에스토니아", engName: "Estonia", code: "ee", capital: "탈린", flower: "수레국화", flowerEng: "Centaurea cyanus", lat: 58.5953, lon: 25.0136, continent: "europe" },
+            { name: "라트비아", engName: "Latvia", code: "lv", capital: "리가", flower: "데이지", flowerEng: "Leucanthemum vulgare", lat: 56.8796, lon: 24.6032, continent: "europe" },
+            { name: "리투아니아", engName: "Lithuania", code: "lt", capital: "빌뉴스", flower: "운향", flowerEng: "Ruta graveolens", lat: 55.1694, lon: 23.8813, continent: "europe" },
+            { name: "슬로바키아", engName: "Slovakia", code: "sk", capital: "브라티슬라바", flower: "참피나무 꽃 (린덴)", flowerEng: "Tilia", lat: 48.6690, lon: 19.6990, continent: "europe" },
+            { name: "슬로베니아", engName: "Slovenia", code: "si", capital: "류블랴나", flower: "카네이션", flowerEng: "Dianthus caryophyllus", lat: 46.1512, lon: 14.9955, continent: "europe" },
+            { name: "미얀마", engName: "Myanmar", code: "mm", capital: "네피도", flower: "파두크", flowerEng: "Pterocarpus macrocarpus", lat: 21.9162, lon: 95.9560, continent: "asia" },
+            { name: "캄보디아", engName: "Cambodia", code: "kh", capital: "프놈펜", flower: "롬둘", flowerEng: "Sphaerocoryne affinis", lat: 12.5657, lon: 104.9910, continent: "asia" },
+            { name: "대만", engName: "Taiwan", code: "tw", capital: "타이베이", flower: "매화", flowerEng: "Prunus mume", lat: 23.6978, lon: 120.9605, continent: "asia" },
+            { name: "바하마", engName: "Bahamas", code: "bs", capital: "나소", flower: "옐로우 엘더", flowerEng: "Tecoma stans", lat: 25.0343, lon: -77.3963, continent: "americas" },
             { name: "모나코", engName: "Monaco", code: "mc", capital: "모나코", flower: "카네이션", flowerEng: "Carnation", lat: 43.7384, lon: 7.4246, continent: "europe" },
-            { name: "룩셈부르크", engName: "Luxembourg", code: "lu", capital: "룩셈부르크", flower: "장미", flowerEng: "Rose", lat: 49.8153, lon: 6.1296, continent: "europe" },
-            { name: "모로코", engName: "Morocco", code: "ma", capital: "라바트", flower: "장미", flowerEng: "Rose", lat: 31.7917, lon: -7.0926, continent: "africa" },
-            { name: "파라과이", engName: "Paraguay", code: "py", capital: "아순시온", flower: "시계꽃", flowerEng: "Passion Flower", lat: -23.4425, lon: -58.4438, continent: "americas" }
+            { name: "룩셈부르크", engName: "Luxembourg", code: "lu", capital: "룩셈부르크", flower: "장미", flowerEng: "Rosa", lat: 49.8153, lon: 6.1296, continent: "europe" }
         ];
 
         let activeCountryId = null;
         let map = null;
         let markersGroup = [];
-        let activeTab = "art"; // 'art' or 'story'
+        let activeTab = "photo"; // 'photo', 'art' or 'story'
 
         // Gemini API configurations
         const apiKey = ""; // Canvas runtime handles empty string as the active model key
@@ -505,15 +539,65 @@
                 flagImg.src = `https://placehold.co/320x200/1e293b/ffffff?text=${country.name}`;
             };
 
-            // Reset dynamic content loaders
+            // Trigger Image & Story Loaders
+            document.getElementById('photo-loader').classList.remove('hidden');
+            document.getElementById('photo-fallback-ui').classList.add('hidden');
+            document.getElementById('flower-real-image').classList.add('hidden');
+
             document.getElementById('image-loader').classList.remove('hidden');
             document.getElementById('image-fallback-ui').classList.add('hidden');
             document.getElementById('story-loader').classList.remove('hidden');
             document.getElementById('story-text').innerHTML = "";
 
-            // Trigger AI Generation Tasks (Text and Image)
+            // Trigger All Actions
+            loadWikipediaFlowerImage(country);
             fetchFlowerStory(country);
             generateFlowerImage(country);
+        }
+
+        // Wikipedia REST API to dynamically fetch real photos of flower
+        async function loadWikipediaFlowerImage(country) {
+            let queryName = country.flowerEng;
+            try {
+                let imageUrl = await fetchWikiImageFromAPI(queryName);
+                
+                // If failed, try search with Korean flower name or standard name
+                if (!imageUrl) {
+                    imageUrl = await fetchWikiImageFromAPI(country.flower);
+                }
+
+                const imgEl = document.getElementById('flower-real-image');
+                if (imageUrl) {
+                    imgEl.src = imageUrl;
+                    imgEl.classList.remove('hidden');
+                    document.getElementById('wiki-link-btn').href = `https://en.wikipedia.org/wiki/${encodeURIComponent(queryName)}`;
+                    document.getElementById('photo-fallback-ui').classList.add('hidden');
+                } else {
+                    throw new Error("No image found on Wikipedia for " + queryName);
+                }
+            } catch (error) {
+                console.warn("Wikipedia Image fetch failed, using fallback:", error);
+                document.getElementById('photo-fallback-ui').classList.remove('hidden');
+                
+                // Fallback to a high quality beautiful static botanical stock image
+                const imgEl = document.getElementById('flower-real-image');
+                imgEl.src = `https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=600&q=80`;
+                imgEl.classList.remove('hidden');
+                document.getElementById('wiki-link-btn').href = `https://en.wikipedia.org/wiki/${encodeURIComponent(queryName)}`;
+            } finally {
+                document.getElementById('photo-loader').classList.add('hidden');
+            }
+        }
+
+        async function fetchWikiImageFromAPI(name) {
+            // Clean names to prevent API error
+            const cleanName = name.replace(/\(.*?\)/g, '').trim();
+            const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(cleanName)}`;
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return (data.originalimage && data.originalimage.source) ? data.originalimage.source : 
+                   (data.thumbnail && data.thumbnail.source) ? data.thumbnail.source : null;
         }
 
         async function fetchFlowerStory(country, retryCount = 0) {
@@ -552,7 +636,6 @@
                 const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
 
                 if (text) {
-                    // Update UI with beautiful styled markdown-like formatting
                     const formattedText = parseMarkdownToHtml(text);
                     document.getElementById('story-text').innerHTML = formattedText;
                 } else {
@@ -561,7 +644,6 @@
             } catch (error) {
                 console.warn(`Text generation failed. Retry count: ${retryCount}`, error);
                 if (retryCount < 3) {
-                    // Exponential Backoff
                     const delay = Math.pow(2, retryCount) * 1000;
                     setTimeout(() => fetchFlowerStory(country, retryCount + 1), delay);
                 } else {
@@ -623,11 +705,11 @@
                         🌸 <strong>${country.name}의 국화: ${country.flower} (${country.flowerEng})</strong>
                     </p>
                     <p class="text-xs text-slate-400 bg-slate-900 p-3.5 rounded-xl border border-slate-800">
-                        ⚠️ AI 상세 분석 서비스가 현재 혼잡합니다. 잠시 후 상단의 '스토리 재생성' 버튼을 눌러 다시 분석할 수 있습니다. 
-                        대체 기본 상식: 이 꽃은 전통적으로 ${country.name}에서 가장 사랑받는 대표적인 전통 꽃으로, 오랜 세월 국토 전역에서 자생하며 이 나라 민족성과 강인한 생명력을 상징해 왔습니다.
+                        ⚠️ AI 상세 분석 서비스가 현재 대기 상태입니다. 실제 꽃 사진 탭을 이용하여 실제 국화를 확인하실 수 있습니다. 
+                        국화 상식: 이 꽃은 전통적으로 ${country.name}에서 큰 사랑을 받는 종으로서 민족적 역사와 정서를 고스란히 담고 있는 유서 깊은 식물입니다.
                     </p>
                     <div class="border-l-4 border-emerald-500 pl-4 py-1 text-xs text-slate-400 italic">
-                        "역사와 전통을 담아 그 민족의 기상을 대변하는 아름다운 국화 도감"
+                        "대자연과 인류의 헤리티지가 응축된 아름다운 대표 꽃 도감"
                     </div>
                 </div>
             `;
@@ -635,13 +717,11 @@
 
         function showImageFallback(country) {
             const imgEl = document.getElementById('flower-ai-image');
-            // Show a highly relevant botanical vector placeholder instead
             imgEl.src = `https://placehold.co/500x500/111827/ffffff?text=${encodeURIComponent(country.flowerEng)}`;
             document.getElementById('image-fallback-ui').classList.remove('hidden');
         }
 
         function parseMarkdownToHtml(text) {
-            // Simple markdown parser to style AI text response beautifully
             let html = text
                 .replace(/\n\n/g, '</div><div class="mt-4">')
                 .replace(/\n/g, '<br>')
@@ -693,24 +773,41 @@
             });
 
             // Tabs toggle logic
+            const tabPhotoBtn = document.getElementById('tab-photo-btn');
             const tabArtBtn = document.getElementById('tab-art-btn');
             const tabStoryBtn = document.getElementById('tab-story-btn');
+            
+            const contentPhoto = document.getElementById('tab-content-photo');
             const contentArt = document.getElementById('tab-content-art');
             const contentStory = document.getElementById('tab-content-story');
+
+            tabPhotoBtn.addEventListener('click', () => {
+                activeTab = "photo";
+                tabPhotoBtn.className = "flex-1 py-3 text-center border-b-2 border-emerald-500 text-emerald-400 font-semibold focus:outline-none transition-all";
+                tabArtBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
+                tabStoryBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
+                contentPhoto.classList.remove('hidden');
+                contentArt.classList.add('hidden');
+                contentStory.classList.add('hidden');
+            });
 
             tabArtBtn.addEventListener('click', () => {
                 activeTab = "art";
                 tabArtBtn.className = "flex-1 py-3 text-center border-b-2 border-emerald-500 text-emerald-400 font-semibold focus:outline-none transition-all";
+                tabPhotoBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
                 tabStoryBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
                 contentArt.classList.remove('hidden');
+                contentPhoto.classList.add('hidden');
                 contentStory.classList.add('hidden');
             });
 
             tabStoryBtn.addEventListener('click', () => {
                 activeTab = "story";
                 tabStoryBtn.className = "flex-1 py-3 text-center border-b-2 border-emerald-500 text-emerald-400 font-semibold focus:outline-none transition-all";
+                tabPhotoBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
                 tabArtBtn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 focus:outline-none transition-all";
                 contentStory.classList.remove('hidden');
+                contentPhoto.classList.add('hidden');
                 contentArt.classList.add('hidden');
             });
 
