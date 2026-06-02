@@ -62,6 +62,20 @@
                 box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
             }
         }
+        @keyframes pulse-active {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.8);
+            }
+            70% {
+                transform: scale(1.15);
+                box-shadow: 0 0 0 12px rgba(139, 92, 246, 0);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(139, 92, 246, 0);
+            }
+        }
         .custom-pulsing-marker {
             background: #10b981;
             border: 2px solid #ffffff;
@@ -72,8 +86,8 @@
         .custom-pulsing-marker.active-marker {
             background: #8b5cf6 !important;
             border-color: #ffffff !important;
-            animation: none !important;
-            box-shadow: 0 0 12px #8b5cf6 !important;
+            animation: pulse-active 1.8s infinite !important;
+            z-index: 9999 !important;
         }
     </style>
 </head>
@@ -453,9 +467,12 @@
             markersGroup = [];
 
             list.forEach((country, index) => {
+                // Determine if this marker should stay active/highlighted
+                const isActive = country.code === activeCountryId;
+
                 // Custom pulsing marker style
                 const customIcon = L.divIcon({
-                    className: `custom-pulsing-marker marker-id-${country.code}`,
+                    className: `custom-pulsing-marker marker-id-${country.code} ${isActive ? 'active-marker' : ''}`,
                     iconSize: [14, 14],
                     iconAnchor: [7, 7]
                 });
@@ -756,7 +773,7 @@
 
                 renderMarkers(filtered);
 
-                // Auto select first if uniquely found
+                // Auto select first if uniquely found in real-time search
                 if (filtered.length === 1) {
                     selectCountry(filtered[0]);
                 }
@@ -764,6 +781,29 @@
 
             searchInput.addEventListener('input', filterCountries);
             continentFilter.addEventListener('change', filterCountries);
+
+            // Select on Enter key press
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const query = searchInput.value.toLowerCase().trim();
+                    const continent = continentFilter.value;
+
+                    const filtered = countriesList.filter(country => {
+                        const matchesSearch = country.name.toLowerCase().includes(query) || 
+                                              country.engName.toLowerCase().includes(query) || 
+                                              country.capital.toLowerCase().includes(query) ||
+                                              country.flower.toLowerCase().includes(query);
+                        const matchesContinent = continent === 'all' || country.continent === continent;
+                        return matchesSearch && matchesContinent;
+                    });
+
+                    // If matches exist, select the first matching country and shift focus
+                    if (filtered.length > 0) {
+                        selectCountry(filtered[0]);
+                        searchInput.blur(); // Remove focus from search bar
+                    }
+                }
+            });
 
             // Random btn
             document.getElementById('random-btn').addEventListener('click', () => {
