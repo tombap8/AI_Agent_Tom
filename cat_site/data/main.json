@@ -1,0 +1,63 @@
+{
+  "general": {
+    "characteristics": [
+      "유연한 몸과 뛰어난 균형 감각을 가지고 있습니다.",
+      "독립적인 성격이 강하지만, 보호자와 유대감을 형성하는 것을 좋아합니다.",
+      "그루밍을 통해 스스로 청결을 유지합니다.",
+      "주로 야행성이며 낮에는 잠을 많이 잡고 밤에 활발해지는 경향이 있습니다."
+    ],
+    "care_tips": [
+      "깨끗한 화장실을 유지하고 모래를 정기적으로 갈아주세요.",
+      "발톱을 긁을 수 있는 스크래쳐를 여러 개 준비해 주세요.",
+      "균형 잡힌 식단과 신선한 물을 항상 제공하세요.",
+      "정기적인 예방접종과 구충, 건강검진을 위해 동물병원에 방문해야 합니다."
+    ]
+  },
+  "breeds": [
+    {
+      "name": "페르시안 (Persian)",
+      "image": "https://images.unsplash.com/photo-1543852786-1cf6624b9987?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "banner_image": "https://images.unsplash.com/photo-1543852786-1cf6624b9987?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      "characteristics": "둥근 얼굴과 짧은 다리, 풍성하고 긴 털이 특징입니다. 매우 얌전하고 느긋한 성격을 가졌습니다.",
+      "care_tips": "긴 털이 엉키지 않도록 매일 빗질을 해줘야 합니다. 눈 주변의 분비물도 자주 닦아주는 것이 좋습니다."
+    },
+    {
+      "name": "메인쿤 (Maine Coon)",
+      "image": "https://images.unsplash.com/photo-1511275539165-cc46b1ee89bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "banner_image": "https://images.unsplash.com/photo-1511275539165-cc46b1ee89bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      "characteristics": "매우 큰 체구와 튼튼한 골격을 가진 대형묘입니다. 상냥하고 '개냥이' 같은 성격으로 유명합니다.",
+      "care_tips": "활동량이 많으므로 캣타워 등 수직 공간을 충분히 마련해 주어야 합니다. 몸집이 커서 대형 화장실이 필요합니다."
+    },
+    {
+      "name": "샴 (Siamese)",
+      "image": "https://images.unsplash.com/photo-1513245543132-31f507417b26?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "banner_image": "https://images.unsplash.com/photo-1513245543132-31f507417b26?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80",
+      "characteristics": "날씬한 체형에 포인트 컬러(얼굴, 발, 꼬리에 짙은 색)와 파란 눈이 특징입니다. 호기심이 많고 수다스럽습니다.",
+      "care_tips": "관심을 받는 것을 매우 좋아하므로 보호자와의 놀이 시간이 중요합니다. 혼자 두면 외로움을 많이 탈 수 있습니다."
+    },
+    {
+      "name": "랙돌 (Ragdoll)",
+      "image": "https://images.unsplash.com/photo-1513360371669-4adf3dd7dff8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "characteristics": "안아 올리면 인형처럼 몸을 축 늘어뜨리는 특징이 있습니다. 매우 순하고 사람을 잘 따릅니다.",
+      "care_tips": "체중이 많이 나갈 수 있으므로 비만 관리에 신경 써야 합니다. 실내 생활에 매우 적합한 고양이입니다."
+    },
+    {
+      "name": "벵갈 (Bengal)",
+      "image": "https://images.unsplash.com/photo-1555685812-4b943f1cb0eb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "characteristics": "표범과 같은 화려한 점박이 무늬가 특징입니다. 에너지가 넘치고 장난기가 매우 많습니다.",
+      "care_tips": "엄청난 활동량을 감당할 수 있는 다양한 놀이 환경과 장난감이 필수적입니다. 지능이 높아 간단한 훈련도 가능합니다."
+    },
+    {
+      "name": "스핑크스 (Sphynx)",
+      "image": "https://images.unsplash.com/photo-1520315342629-6ea920342047?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "characteristics": "털이 없는 것처럼 보이며, 피부에 주름이 많습니다. 매우 애교가 많고 사람과 있는 것을 좋아합니다.",
+      "care_tips": "털이 없어 체온 유지에 신경 써야 하며, 피부 분비물을 정기적으로 목욕이나 젖은 수건으로 닦아주어야 합니다."
+    },
+    {
+      "name": "브리티시 쇼트헤어 (British Shorthair)",
+      "image": "https://images.unsplash.com/photo-1548247416-ec66f4900b2e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
+      "characteristics": "둥근 머리와 통통한 볼, 빽빽한 짧은 털을 가졌습니다. 독립적이면서도 인내심이 강한 성격입니다.",
+      "care_tips": "활동량이 적어 살이 찌기 쉬우므로 식사량 조절이 중요합니다. 털 빠짐이 제법 있어 잦은 빗질이 필요합니다."
+    }
+  ]
+}
