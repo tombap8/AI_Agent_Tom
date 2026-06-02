@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>럭키 로또 추첨기</title>
+    <!-- 폭죽 효과를 위한 canvas-confetti 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%, #ff6a00 200%);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            font-family: 'Jua', sans-serif;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .header {
+            margin-top: 50px;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin: 0 0 10px 0;
+            color: #ffd700;
+        }
+
+        .generate-btn {
+            background: linear-gradient(45deg, #ff416c, #ff4b2b);
+            border: none;
+            border-radius: 30px;
+            padding: 15px 40px;
+            font-size: 1.5rem;
+            color: white;
+            font-family: 'Jua', sans-serif;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-bottom: 30px;
+        }
+
+        .generate-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+        }
+
+        .generate-btn:active {
+            transform: scale(0.95);
+        }
+
+        .generate-btn:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 0 20px 20px 20px;
+            box-sizing: border-box;
+        }
+
+        .lotto-row {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes slideIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 공 컨테이너 (3D 효과를 위함) */
+        .ball-container {
+            width: 60px;
+            height: 60px;
+            perspective: 1000px;
+        }
+
+        /* 실제 회전하는 공 요소 */
+        .ball {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            /* 여기서 transition으로 숫자 도는 애니메이션 구현 */
+            transition: transform 1.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* 회전 클래스가 붙었을 때 (5바퀴 반 회전 = 1980도) */
+        .ball.spinning {
+            transform: rotateX(1980deg);
+        }
+
+        .ball-front, .ball-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: inset -5px -5px 10px rgba(0,0,0,0.3), 0 4px 8px rgba(0,0,0,0.4);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .ball-front {
+            background: radial-gradient(circle at 30% 30%, #e0e0e0, #888);
+            color: #fff;
+            transform: rotateX(0deg);
+        }
+
+        .ball-back {
+            /* 1980도는 180도로 끝나기 때문에 180도 회전된 상태가 정면이 됨 */
+            transform: rotateX(180deg);
+        }
+
+        /* 로또 번호별 색상 */
+        .color-yellow { background: radial-gradient(circle at 30% 30%, #ffd700, #f39c12); color: #333; text-shadow: none; }
+        .color-blue { background: radial-gradient(circle at 30% 30%, #4facfe, #00f2fe); }
+        .color-red { background: radial-gradient(circle at 30% 30%, #ff4b2b, #ff416c); }
+        .color-gray { background: radial-gradient(circle at 30% 30%, #bdc3c7, #2c3e50); }
+        .color-green { background: radial-gradient(circle at 30% 30%, #a8e063, #56ab2f); }
+
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🌟 럭키 로또 추첨기 🌟</h1>
+        <p>인생 역전의 주인공은 바로 당신!</p>
+    </div>
+
+    <button id="generateBtn" class="generate-btn">번호 뽑기!</button>
+
+    <div id="results" class="results-container">
+        <!-- 추첨 결과가 여기에 추가됩니다. -->
+    </div>
+
+    <script>
+        const generateBtn = document.getElementById('generateBtn');
+        const resultsContainer = document.getElementById('results');
+        let isGenerating = false;
+
+        // 번호에 따른 색상 클래스 반환
+        function getBallColorClass(num) {
+            if (num <= 10) return 'color-yellow';
+            if (num <= 20) return 'color-blue';
+            if (num <= 30) return 'color-red';
+            if (num <= 40) return 'color-gray';
+            return 'color-green';
+        }
+
+        // 폭죽 이펙트
+        function shootFireworks() {
+            var duration = 2 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 }
+                }));
+                confetti(Object.assign({}, defaults, { particleCount,
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 }
+                }));
+            }, 250);
+        }
+
+        generateBtn.addEventListener('click', () => {
+            if (isGenerating) return;
+            isGenerating = true;
+            generateBtn.disabled = true;
+
+            // 5개 이상이면 가장 오래된(첫 번째) 결과 삭제
+            if (resultsContainer.children.length >= 5) {
+                resultsContainer.removeChild(resultsContainer.firstElementChild);
+            }
+
+            // 1~45 중 중복 없이 6개 번호 추첨
+            let numbers = [];
+            while (numbers.length < 6) {
+                let num = Math.floor(Math.random() * 45) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            // 오름차순 정렬
+            numbers.sort((a, b) => a - b);
+
+            // 새로운 결과 행(Row) 생성
+            const row = document.createElement('div');
+            row.className = 'lotto-row';
+
+            // 공 6개 요소 생성
+            const balls = numbers.map(num => {
+                const container = document.createElement('div');
+                container.className = 'ball-container';
+
+                const ball = document.createElement('div');
+                ball.className = 'ball';
+
+                const front = document.createElement('div');
+                front.className = 'ball-front';
+                front.textContent = '?';
+
+                const back = document.createElement('div');
+                back.className = 'ball-back ' + getBallColorClass(num);
+                back.textContent = num;
+
+                ball.appendChild(front);
+                ball.appendChild(back);
+                container.appendChild(ball);
+                row.appendChild(container);
+
+                return ball;
+            });
+
+            // 컨테이너에 추가 (아래로 쌓임)
+            resultsContainer.appendChild(row);
+
+            // 순차적으로 transition 애니메이션(돌기) 실행
+            balls.forEach((ball, index) => {
+                setTimeout(() => {
+                    ball.classList.add('spinning');
+                    
+                    // 마지막 공이 다 돌고 나면 폭죽 터뜨리고 상태 초기화
+                    if (index === balls.length - 1) {
+                        setTimeout(() => {
+                            shootFireworks();
+                            isGenerating = false;
+                            generateBtn.disabled = false;
+                        }, 1500); // transition 시간(1.5s)과 맞춤
+                    }
+                }, index * 300); // 0.3초 간격으로 하나씩 돎
+            });
+        });
+    </script>
+</body>
+</html>

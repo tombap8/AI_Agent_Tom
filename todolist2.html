@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToDo List App - Inspired by image_0.png</title>
+<style>
+    /* Reset and Base Styles */
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        /* Geometric Poly-gradient background from image_0.png */
+        background: 
+            linear-gradient(217deg, rgba(165,103,178,.8), rgba(165,103,178,0) 70.71%),
+            linear-gradient(127deg, rgba(82,216,211,.8), rgba(82,216,211,0) 70.71%),
+            linear-gradient(336deg, rgba(179,165,221,.8), rgba(179,165,221,0) 70.71%);
+        background-color: #f0f0f0; /* Fallback */
+    }
+
+    /* Outer dark border like a browser window or framed area */
+    .outer-container {
+        border: 15px solid #111;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+
+    /* Main App Container */
+    .app-card {
+        background-color: #ffffff;
+        width: 850px; /* Specific width similar to image */
+        padding: 40px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    /* Title */
+    .app-title {
+        font-size: 42px;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 30px;
+    }
+
+    /* Input Field Area */
+    .input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 20px;
+        font-size: 20px;
+        color: #888;
+    }
+
+    #todo-input {
+        width: 100%;
+        padding: 18px 20px 18px 60px;
+        font-size: 18px;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        outline: none;
+    }
+
+    #todo-input::placeholder {
+        color: #b0b0b0;
+    }
+
+    #add-todo-btn {
+        display: none; /* Hide standard add button, add on Enter */
+    }
+
+    /* ToDo List Area */
+    .list-container {
+        text-align: left;
+        margin-bottom: 30px;
+    }
+
+    .todo-item {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #eaeaea;
+    }
+
+    .todo-item:last-child {
+        border-bottom: none;
+    }
+
+    .todo-checkbox {
+        width: 20px;
+        height: 20px;
+        margin-right: 25px;
+        cursor: pointer;
+    }
+
+    .todo-text {
+        flex-grow: 1;
+        font-size: 18px;
+        color: #444;
+    }
+
+    .todo-item.completed .todo-text {
+        color: #bbb;
+        text-decoration: line-through;
+    }
+
+    .delete-item-btn {
+        background: none;
+        border: none;
+        color: #444;
+        font-size: 20px;
+        cursor: pointer;
+        padding: 0 10px;
+    }
+
+    .delete-item-btn:hover {
+        color: #cc0000;
+    }
+
+    /* Status Bar Area */
+    .status-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 1px solid #eaeaea;
+    }
+
+    .completed-counter {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+    }
+
+    .status-buttons {
+        display: flex;
+        gap: 15px;
+    }
+
+    .action-btn {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .action-btn:hover {
+        background-color: #5a6268;
+    }
+
+    /* Font Awesome for Icons (using a simple text replacement for this single file example) */
+    @font-face {
+        font-family: 'Icons';
+        src: url('data:application/font-woff2;charset=utf-8;base64,...(encoded font data)...') format('woff2'); /* This would require a full font file encoding. For simplicity, I will use UTF-8 characters and simple CSS */
+    }
+    
+    /* Using character icons for this example to keep it a single file. */
+    .input-icon::before { content: "↳"; }
+    .delete-item-btn::before { content: "🗑"; }
+
+    /* Mobile Responsive CSS */
+    @media (max-width: 900px) {
+        .outer-container {
+            border-width: 10px;
+            max-width: 95vw;
+        }
+        .app-card {
+            width: 100%;
+            padding: 30px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .outer-container {
+            border-width: 5px;
+            max-width: 96vw;
+        }
+        .app-card {
+            padding: 20px 15px;
+        }
+        .app-title {
+            font-size: 32px;
+            margin-bottom: 20px;
+        }
+        #todo-input {
+            padding: 15px 15px 15px 45px;
+            font-size: 16px;
+        }
+        .input-icon {
+            left: 15px;
+        }
+        .todo-text {
+            font-size: 16px;
+        }
+        .todo-checkbox {
+            margin-right: 15px;
+        }
+        .status-bar {
+            flex-direction: column;
+            gap: 15px;
+            padding-top: 15px;
+        }
+        .status-buttons {
+            width: 100%;
+            display: flex;
+            justify-content: stretch;
+            gap: 10px;
+        }
+        .action-btn {
+            flex: 1;
+            padding: 10px;
+            font-size: 14px;
+        }
+    }
+</style>
+</head>
+<body>
+    <div class="outer-container">
+        <div class="app-card">
+            <h1 class="app-title">ToDo List App</h1>
+            
+            <div class="input-wrapper">
+                <span class="input-icon"></span>
+                <input type="text" id="todo-input" placeholder="Please enter your ToDo List">
+            </div>
+
+            <div class="list-container">
+                <div id="todo-list">
+                    <div class="todo-item completed" data-id="1">
+                        <input type="checkbox" class="todo-checkbox" checked>
+                        <span class="todo-text">List</span>
+                        <button class="delete-item-btn"></button>
+                    </div>
+                    <div class="todo-item completed" data-id="2">
+                        <input type="checkbox" class="todo-checkbox" checked>
+                        <span class="todo-text">Exercise</span>
+                        <button class="delete-item-btn"></button>
+                    </div>
+                    <div class="todo-item" data-id="3">
+                        <input type="checkbox" class="todo-checkbox">
+                        <span class="todo-text">Study</span>
+                        <button class="delete-item-btn"></button>
+                    </div>
+                    <div class="todo-item completed" data-id="4">
+                        <input type="checkbox" class="todo-checkbox" checked>
+                        <span class="todo-text">Shopping</span>
+                        <button class="delete-item-btn"></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-bar">
+                <div class="completed-counter">Completed Todos : <span id="completed-count">0</span></div>
+                <div class="status-buttons">
+                    <button class="action-btn" id="delete-selected-btn">Delete selected</button>
+                    <button class="action-btn" id="clear-all-btn">Clear all</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Elements
+    const todoInput = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+    const completedCountEl = document.getElementById('completed-count');
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    const clearAllBtn = document.getElementById('clear-all-btn');
+
+    // Data (Initial seed from image)
+    let todos = [
+        { id: 1, text: "List", completed: true },
+        { id: 2, text: "Exercise", completed: true },
+        { id: 3, text: "Study", completed: false },
+        { id: 4, text: "Shopping", completed: true }
+    ];
+
+    // Functions
+
+    // 1. Render Todos
+    function renderTodos() {
+        todoList.innerHTML = '';
+        todos.forEach(todo => {
+            const itemDiv = document.createElement('div');
+            itemDiv.classList.add('todo-item');
+            if (todo.completed) {
+                itemDiv.classList.add('completed');
+            }
+            itemDiv.setAttribute('data-id', todo.id);
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.classList.add('todo-checkbox');
+            checkbox.checked = todo.completed;
+            checkbox.addEventListener('change', () => toggleCompleted(todo.id));
+
+            const textSpan = document.createElement('span');
+            textSpan.classList.add('todo-text');
+            textSpan.textContent = todo.text;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.classList.add('delete-item-btn');
+            deleteBtn.addEventListener('click', () => deleteTodo(todo.id));
+
+            itemDiv.appendChild(checkbox);
+            itemDiv.appendChild(textSpan);
+            itemDiv.appendChild(deleteBtn);
+            todoList.appendChild(itemDiv);
+        });
+        updateCompletedCount();
+    }
+
+    // 2. Add Todo
+    function addTodo() {
+        const text = todoInput.value.trim();
+        if (text !== '') {
+            const newTodo = {
+                id: Date.now(), // simple unique ID
+                text: text,
+                completed: false
+            };
+            todos.push(newTodo);
+            todoInput.value = '';
+            renderTodos();
+        }
+    }
+
+    // 3. Toggle Completed State
+    function toggleCompleted(id) {
+        todos = todos.map(todo => {
+            if (todo.id === id) {
+                return { ...todo, completed: !todo.completed };
+            }
+            return todo;
+        });
+        renderTodos();
+    }
+
+    // 4. Delete Single Todo
+    function deleteTodo(id) {
+        todos = todos.filter(todo => todo.id !== id);
+        renderTodos();
+    }
+
+    // 5. Update Completed Count (matches image logic: specific count, not full ratio)
+    function updateCompletedCount() {
+        const completedCount = todos.filter(todo => todo.completed).length;
+        // The image shows '3' for 4 items, we'll match that style by just showing the count.
+        completedCountEl.textContent = completedCount;
+    }
+
+    // 6. Delete Selected Todos
+    function deleteSelected() {
+        todos = todos.filter(todo => !todo.completed);
+        renderTodos();
+    }
+
+    // 7. Clear All Todos
+    function clearAll() {
+        todos = [];
+        renderTodos();
+    }
+
+    // Event Listeners
+
+    // Add on 'Enter' key
+    todoInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            addTodo();
+        }
+    });
+
+    deleteSelectedBtn.addEventListener('click', deleteSelected);
+    clearAllBtn.addEventListener('click', clearAll);
+
+    // Initial render
+    renderTodos();
+
+</script>
+</body>
+</html>
