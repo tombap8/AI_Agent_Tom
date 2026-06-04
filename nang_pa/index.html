@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냉파먹먹 - 냉장고 파먹기 웹앱</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans KR', sans-serif; background-color: #f8fafc; }
+    </style>
+</head>
+<body>
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2 cursor-pointer" onclick="switchTab('dashboard')">
+                <i class="fa-solid fa-refrigerator text-emerald-500 text-2xl"></i>
+                <span class="text-xl font-bold text-slate-800 tracking-tight">냉파먹먹</span>
+            </div>
+            <nav class="flex space-x-6">
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn text-emerald-600 font-bold border-b-2 border-emerald-500 pb-1">
+                    <i class="fa-solid fa-chart-pie mr-1"></i> 대시보드
+                </button>
+                <button onclick="switchTab('upload')" id="nav-upload" class="nav-btn text-slate-500 hover:text-emerald-500 pb-1 transition">
+                    <i class="fa-solid fa-camera mr-1"></i> 식재료 등록
+                </button>
+                <button onclick="switchTab('recipe')" id="nav-recipe" class="nav-btn text-slate-500 hover:text-emerald-500 pb-1 transition">
+                    <i class="fa-solid fa-utensils mr-1"></i> 레시피 추천
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 py-8">
+
+        <section id="tab-dashboard" class="tab-content block">
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg mb-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="bg-amber-500 text-white p-2 rounded-full animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-amber-900">소비 임박 식재료 발생!</h3>
+                        <p class="text-sm text-amber-700">유통기한이 3일 이하로 남은 재료가 있습니다. '마감 임박 레시피'로 먼저 요리해 보세요.</p>
+                    </div>
+                </div>
+                <button onclick="suggestUrgentRecipe()" class="bg-amber-600 hover:bg-amber-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition shadow-xs cursor-pointer">
+                    추천 레시피 보기
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">나의 냉장고 현황</h2>
+                <span class="text-sm text-slate-500">보유 식재료 총 <b id="total-count" class="text-emerald-600">0</b>개</span>
+            </div>
+
+            <div id="ingredient-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                </div>
+        </section>
+
+
+        <section id="tab-upload" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">식재료 자동 등록</h2>
+            <p class="text-slate-500 mb-6 text-sm">냉장고 내부 사진이나 식재료 사진을 업로드하면 AI가 자동으로 식별합니다.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center justify-center min-h-[350px]">
+                    <input type="file" id="image-input" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
+                    
+                    <label id="drop-zone" for="image-input" class="w-full h-64 border-2 border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500 hover:bg-emerald-50/30 transition">
+                        <i class="fa-solid fa-cloud-arrow-up text-4xl text-slate-400 mb-3"></i>
+                        <span class="text-slate-600 font-medium">식재료 사진 업로드하기</span>
+                        <span class="text-xs text-slate-400 mt-1">드래그 앤 드롭 또는 클릭하여 파일 선택</span>
+                    </label>
+
+                    <div id="preview-container" class="hidden w-full relative">
+                        <img id="image-preview" class="w-full h-64 object-cover rounded-xl shadow-inner" src="" alt="미리보기">
+                        <div id="ai-loader" class="absolute inset-0 bg-slate-900/60 rounded-xl flex flex-col items-center justify-center text-white hidden">
+                            <div class="w-12 h-12 border-4 border-emerald-400 border-t-transparent rounded-full animate-spin mb-4"></div>
+                            <p class="font-medium tracking-wide">AI가 식재료를 식별하고 있습니다...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-800 mb-4 flex items-center justify-between">
+                            <span><i class="fa-solid fa-robot text-emerald-500 mr-2"></i>인식 결과 보정</span>
+                            <span class="text-xs text-slate-400 font-normal">오인식되거나 누락된 재료를 수정하세요</span>
+                        </h3>
+
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="manual-input" placeholder="추가할 식재료 입력 (예: 당근)" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-emerald-500">
+                            <button onclick="addManualTag()" class="bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition cursor-pointer">추가</button>
+                        </div>
+
+                        <div id="detected-tags-container" class="flex flex-wrap gap-2 min-h-[100px] p-3 bg-slate-50 rounded-xl border border-slate-100 items-start">
+                            <p id="empty-tag-msg" class="text-slate-400 text-sm m-auto text-center py-6">사진을 업로드하면 식별된 재료가 여기에 표시됩니다.</p>
+                        </div>
+                    </div>
+
+                    <button id="save-to-fridge-btn" disabled onclick="saveIngredientsToFridge()" class="w-full mt-6 bg-slate-300 text-slate-500 font-bold py-3 rounded-xl transition cursor-not-allowed">
+                        냉장고에 재료 저장하기
+                    </button>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="tab-recipe" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-slate-800 mb-2">맞춤형 레시피</h2>
+            <p class="text-slate-500 mb-6 text-sm">현재 보유 중인 식재료 기준으로 최적의 매칭 레시피를 제안합니다.</p>
+
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-8 flex flex-wrap items-center gap-4 text-sm">
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-slate-700">요리 유형:</span>
+                    <select id="filter-type" onchange="filterRecipes()" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-emerald-500 bg-white">
+                        <option value="전체">전체보기</option>
+                        <option value="국/찌개">국/찌개</option>
+                        <option value="반찬">반찬</option>
+                        <option value="메인요리">메인요리</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-slate-700">난이도:</span>
+                    <select id="filter-difficulty" onchange="filterRecipes()" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-emerald-500 bg-white">
+                        <option value="전체">전체</option>
+                        <option value="하">쉬움 (하)</option>
+                        <option value="중">보통 (중)</option>
+                    </select>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <span class="font-bold text-slate-700">조리 시간:</span>
+                    <select id="filter-time" onchange="filterRecipes()" class="border border-slate-200 rounded-lg px-2 py-1.5 focus:outline-emerald-500 bg-white">
+                        <option value="전체">전체</option>
+                        <option value="15">15분 이내</option>
+                        <option value="30">30분 이내</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="recipe-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+        </section>
+
+    </main>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-slate-800 text-white px-4 py-3 rounded-lg shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none z-50 text-sm">
+        알림 메시지
+    </div>
+
+    <script>
+        // 1. 초기 목업 데이터 (냉장고 기본 식재료)
+        let myIngredients = [
+            { id: 1, name: '양파', expiryDays: 5, dateAdded: '2026-06-01' },
+            { id: 2, name: '두부', expiryDays: 2, dateAdded: '2026-06-03' }, // 소비임박
+            { id: 3, name: '달걀', expiryDays: 12, dateAdded: '2026-05-28' },
+            { id: 4, name: '대파', expiryDays: 1, dateAdded: '2026-06-02' }  // 소비임박
+        ];
+
+        // 임시로 AI 가 식별할 목업 더미 리스트 (업로드 시 이 중 무작위 3~4개 검출 시뮬레이션)
+        const aiPool = ['돼지고기', '김치', '두부', '양파', '달걀', '감자', '스팸'];
+        let detectedTags = []; // 현재 업로드 단계에서 잡힌 태그들
+
+        // 2. 레시피 마스터 데이터
+        const recipeMaster = [
+            {
+                name: '얼큰 두부 김치찌개',
+                type: '국/찌개',
+                difficulty: '하',
+                time: 20,
+                required: ['김치', '두부', '돼지고기', '대파'],
+                image: 'https://images.unsplash.com/photo-1627308595229-7830a5c91f9f?w=500&auto=format&fit=crop&q=60'
+            },
+            {
+                name: '달걀 양파 볶음밥',
+                type: '메인요리',
+                difficulty: '하',
+                time: 15,
+                required: ['달걀', '양파', '대파'],
+                image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&auto=format&fit=crop&q=60'
+            },
+            {
+                name: '초간단 백종원 감자조림',
+                type: '반찬',
+                difficulty: '중',
+                time: 30,
+                required: ['감자', '양파', '대파'],
+                image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?w=500&auto=format&fit=crop&q=60'
+            },
+            {
+                name: '스팸 두부 구이',
+                type: '반찬',
+                difficulty: '하',
+                time: 15,
+                required: ['스팸', '두부'],
+                image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&auto=format&fit=crop&q=60'
+            }
+        ];
+
+        // 페이지 초기 로드 실행
+        window.onload = function() {
+            renderDashboard();
+            renderRecipes();
+        };
+
+        // 탭 전환 기능 (SPA 시뮬레이션)
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-emerald-600', 'font-bold', 'border-b-2', 'border-emerald-500');
+                btn.classList.add('text-slate-500');
+            });
+            const activeBtn = document.getElementById(`nav-${tabId}`);
+            activeBtn.classList.remove('text-slate-500');
+            activeBtn.classList.add('text-emerald-600', 'font-bold', 'border-b-2', 'border-emerald-500');
+        }
+
+        // --- ① 대시보드 화면 그리기 ---
+        function renderDashboard() {
+            const grid = document.getElementById('ingredient-grid');
+            const totalCountEl = document.getElementById('total-count');
+            grid.innerHTML = '';
+            totalCountEl.innerText = myIngredients.length;
+
+            myIngredients.forEach(item => {
+                // 남은 일자에 따른 색상 분기
+                let badgeColor = 'bg-emerald-100 text-emerald-800';
+                let borderColor = 'border-slate-100';
+                if(item.expiryDays <= 3) {
+                    badgeColor = 'bg-rose-100 text-rose-800 font-bold animate-pulse';
+                    borderColor = 'border-rose-200 bg-rose-50/20';
+                } else if(item.expiryDays <= 5) {
+                    badgeColor = 'bg-amber-100 text-amber-800';
+                }
+
+                const card = document.createElement('div');
+                card.className = `bg-white p-4 rounded-xl border ${borderColor} shadow-xs flex flex-col justify-between relative group hover:shadow-md transition`;
+                card.innerHTML = `
+                    <div>
+                        <span class="absolute top-2 right-2 text-slate-300 hover:text-rose-500 cursor-pointer text-xs transition" onclick="deleteIngredient(${item.id})">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </span>
+                        <div class="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-600 mb-3 font-bold">
+                            ${item.name[0]}
+                        </div>
+                        <h4 class="font-bold text-slate-800 text-base">${item.name}</h4>
+                    </div>
+                    <div class="mt-4">
+                        <span class="text-xs px-2 py-1 rounded-md ${badgeColor}">D-${item.expiryDays}</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function deleteIngredient(id) {
+            myIngredients = myIngredients.filter(item => item.id !== id);
+            showToast('식재료가 삭제되었습니다.');
+            renderDashboard();
+            renderRecipes(); // 레시피 가용성도 변경되므로 재연동
+        }
+
+        // --- ② 이미지 업로드 및 AI 분석 시뮬레이션 ---
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('drop-zone').classList.add('hidden');
+                document.getElementById('preview-container').classList.remove('hidden');
+                document.getElementById('image-preview').src = e.target.result;
+                
+                // AI 스피너 가동 (2초간 서치하는 척 시뮬레이션)
+                const loader = document.getElementById('ai-loader');
+                loader.classList.remove('hidden');
+
+                setTimeout(() => {
+                    loader.classList.add('hidden');
+                    simulateAiDetection();
+                }, 1800);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // AI 가 재료를 무작위로 추출하여 매칭한 것처럼 시뮬레이션
+        function simulateAiDetection() {
+            // 셔플 후 3가지 무작위 추출
+            const shuffled = [...aiPool].sort(() => 0.5 - Math.random());
+            detectedTags = shuffled.slice(0, 3);
+            
+            renderTags();
+            showToast('AI 분석이 완료되었습니다!');
+        }
+
+        // 분석된 태그들을 칩(Chip) UI 형태로 렌더링
+        function renderTags() {
+            const container = document.getElementById('detected-tags-container');
+            const saveBtn = document.getElementById('save-to-fridge-btn');
+            
+            // 초기 메시지 삭제
+            const msg = document.getElementById('empty-tag-msg');
+            if(msg) msg.remove();
+
+            container.innerHTML = '';
+
+            if(detectedTags.length === 0) {
+                container.innerHTML = `<p id="empty-tag-msg" class="text-slate-400 text-sm m-auto text-center py-6">식별된 재료가 없습니다.</p>`;
+                saveBtn.disabled = true;
+                saveBtn.className = "w-full mt-6 bg-slate-300 text-slate-500 font-bold py-3 rounded-xl transition cursor-not-allowed";
+                return;
+            }
+
+            detectedTags.forEach((tag, idx) => {
+                const chip = document.createElement('div');
+                chip.className = "bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-medium flex items-center space-x-1.5 border border-emerald-200 shadow-xs";
+                chip.innerHTML = `
+                    <span>${tag}</span>
+                    <button onclick="removeTag(${idx})" class="hover:text-rose-600 font-bold ml-1 cursor-pointer">×</button>
+                `;
+                container.appendChild(chip);
+            });
+
+            // 저장 버튼 활성화 변화
+            saveBtn.disabled = false;
+            saveBtn.className = "w-full mt-6 bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 rounded-xl shadow-md cursor-pointer transition transform active:scale-98";
+        }
+
+        // 사용자가 수동으로 태그 추가
+        function addManualTag() {
+            const input = document.getElementById('manual-input');
+            const value = input.value.trim();
+            if(!value) return;
+
+            if(detectedTags.includes(value)) {
+                showToast('이미 포함된 식재료입니다.');
+                return;
+            }
+
+            detectedTags.push(value);
+            input.value = '';
+            renderTags();
+        }
+
+        // 태그 수동 삭제
+        function removeTag(index) {
+            detectedTags.splice(index, 1);
+            renderTags();
+        }
+
+        // 보정 완료된 태그들을 유통기한 기본값 설정하여 냉장고에 추가
+        function saveIngredientsToFridge() {
+            if(detectedTags.length === 0) return;
+
+            detectedTags.forEach(name => {
+                // 냉장고에 이미 중복된 이름이 있는지 검증 생략 혹은 가공
+                const randomExpiry = Math.floor(Math.random() * 10) + 2; // 프로토타입용 무작위 유통기한(2~12일) 기본 설정
+                myIngredients.push({
+                    id: Date.now() + Math.random(),
+                    name: name,
+                    expiryDays: randomExpiry,
+                    dateAdded: new Date().toISOString().split('T')[0]
+                });
+            });
+
+            // 업로드 창 초기화 및 초기화 UI 복구
+            detectedTags = [];
+            document.getElementById('drop-zone').classList.remove('hidden');
+            document.getElementById('preview-container').classList.add('hidden');
+            document.getElementById('image-input').value = '';
+            renderTags();
+
+            showToast('식재료들이 나의 냉장고에 안전하게 저장되었습니다!');
+            renderDashboard();
+            renderRecipes();
+            
+            // 대시보드로 이동
+            setTimeout(() => switchTab('dashboard'), 600);
+        }
+
+
+        // --- ③ 레시피 추천 및 동적 매칭 시스템 ---
+        function renderRecipes() {
+            const list = document.getElementById('recipe-list');
+            list.innerHTML = '';
+
+            const myIngreNames = myIngredients.map(item => item.name);
+
+            // 필터 데이터 가져오기
+            const typeFilter = document.getElementById('filter-type').value;
+            const diffFilter = document.getElementById('filter-difficulty').value;
+            const timeFilter = document.getElementById('filter-time').value;
+
+            // 레시피 목록 매칭 점수 계산 및 필터링
+            let sortedRecipes = recipeMaster.map(recipe => {
+                // 내가 가진 재료와 레시피 필요 재료 매칭 대조
+                const owned = recipe.required.filter(req => myIngreNames.includes(req));
+                const missing = recipe.required.filter(req => !myIngreNames.includes(req));
+                const matchRate = (owned.length / recipe.required.length) * 100;
+
+                return { ...recipe, owned, missing, matchRate };
+            });
+
+            // 매칭율 높은 순서로 1차 정렬
+            sortedRecipes.sort((a, b) => b.matchRate - a.matchRate);
+
+            // 셀렉트 필터 조건 반영
+            if(typeFilter !== '전체') sortedRecipes = sortedRecipes.filter(r => r.type === typeFilter);
+            if(diffFilter !== '전체') sortedRecipes = sortedRecipes.filter(r => r.difficulty === diffFilter);
+            if(timeFilter !== '전체') sortedRecipes = sortedRecipes.filter(r => r.time <= parseInt(timeFilter));
+
+            if(sortedRecipes.length === 0) {
+                list.innerHTML = `<p class="text-slate-400 text-center col-span-full py-12">필터 조건이나 보유 식재료에 맞는 레시피가 없습니다.</p>`;
+                return;
+            }
+
+            sortedRecipes.forEach(recipe => {
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl overflow-hidden shadow-xs border border-slate-100 flex flex-col justify-between hover:shadow-lg transition";
+                
+                // 부족한 재료를 보기좋게 가공
+                let missingBadges = recipe.missing.map(m => `<span class="text-rose-500 font-medium mr-1">#${m}</span>`).join('');
+                if(recipe.missing.length === 0) missingBadges = `<span class="text-emerald-600 text-xs font-bold">재료 완벽 보유!</span>`;
+
+                card.innerHTML = `
+                    <div>
+                        <div class="h-44 w-full relative">
+                            <img class="w-full h-full object-cover" src="${recipe.image}" alt="${recipe.name}">
+                            <span class="absolute top-3 left-3 bg-slate-900/70 text-white text-xs font-bold px-2.5 py-1 rounded-full backdrop-blur-xs">
+                                ${recipe.type}
+                            </span>
+                            <div class="absolute bottom-3 right-3 bg-emerald-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-sm">
+                                매칭률 ${Math.round(recipe.matchRate)}%
+                            </div>
+                        </div>
+                        <div class="p-5">
+                            <h3 class="font-bold text-lg text-slate-800 mb-1">${recipe.name}</h3>
+                            <div class="flex items-center space-x-3 text-xs text-slate-400 mb-4">
+                                <span><i class="fa-regular fa-clock mr-1"></i>${recipe.time}분</span>
+                                <span><i class="fa-solid fa-gauge-high mr-1"></i>난이도 ${recipe.difficulty}</span>
+                            </div>
+
+                            <div class="text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                <p class="text-slate-400 mb-1 font-medium">부족한 재료 안내:</p>
+                                <div class="flex flex-wrap">${missingBadges}</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="px-5 pb-5">
+                        <button onclick="showToast('${recipe.name} 요리법 순서 가이드를 로드합니다.')" class="w-full bg-slate-50 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 border border-slate-200 hover:border-emerald-300 font-medium py-2 rounded-lg text-sm transition cursor-pointer text-center">
+                            조리 순서 보기
+                        </button>
+                    </div>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function filterRecipes() {
+            renderRecipes();
+        }
+
+        // 마감 임박 알림 클릭 시 유통기한 임박도가 높은 '대파/두부' 등을 우선 활용 가능한 레시피 추천 필터링 연동 시뮬레이션
+        function suggestUrgentRecipe() {
+            switchTab('recipe');
+            showToast('유통기한 임박 식재료가 포함된 레시피를 상단 정렬했습니다.');
+        }
+
+        // 토스트 알림 헬퍼
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.innerText = message;
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
