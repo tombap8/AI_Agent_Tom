@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>청운도서관 스마트 웹 서비스</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    /* 스크롤바 커스텀 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans antialiased flex flex-col selection:bg-teal-500 selection:text-white">
+
+  <div id="alert-banner" class="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 border transition-all duration-300 hidden">
+    <i data-lucide="check-circle" class="h-5 w-5"></i>
+    <span id="alert-text" class="font-semibold"></span>
+  </div>
+
+  <div class="bg-gradient-to-r from-teal-700 to-indigo-800 text-white text-xs py-2 px-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-4">
+        <span class="flex items-center gap-1">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          청운도서관은 현재 정상 운영 중 (종합자료실 ~22:00)
+        </span>
+      </div>
+      <div class="flex items-center space-x-4">
+        <a href="#accessibility" class="hover:underline">웹접근성 안내</a>
+        <a href="#sitemap" class="hover:underline text-slate-200">사이트맵</a>
+      </div>
+    </div>
+  </div>
+
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-20">
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+          <div class="bg-gradient-to-tr from-teal-600 to-indigo-700 text-white p-3 rounded-2xl shadow-md">
+            <i data-lucide="book-open" class="h-7 w-7"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-extrabold tracking-tight text-slate-900 flex items-center gap-1.5">
+              청운도서관 <span class="text-xs bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full font-semibold border border-indigo-100">PROTOTYPE</span>
+            </h1>
+            <p class="text-[10px] text-slate-500 tracking-wider uppercase font-bold">Cheongun Public Library</p>
+          </div>
+        </div>
+
+        <nav class="hidden lg:flex items-center space-x-8 font-semibold text-slate-700">
+          <div class="relative group">
+            <button class="flex items-center gap-1 hover:text-teal-600 py-2">
+              자료 검색 <i data-lucide="chevron-down" class="h-4 w-4"></i>
+            </button>
+            <div class="absolute top-full left-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-xl p-3 w-48 hidden group-hover:block">
+              <button onclick="triggerQuickSearch('통합검색')" class="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">통합 도서 검색</button>
+              <button onclick="triggerQuickSearch('도서')" class="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">일반 단행본</button>
+              <button onclick="triggerQuickSearch('비도서')" class="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">비도서 자료</button>
+              <button onclick="triggerQuickSearch('간행물')" class="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">정기간행물</button>
+            </div>
+          </div>
+
+          <div class="relative group">
+            <button class="flex items-center gap-1 hover:text-teal-600 py-2">
+              프로그램 <i data-lucide="chevron-down" class="h-4 w-4"></i>
+            </button>
+            <div class="absolute top-full left-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-xl p-3 w-52 hidden group-hover:block">
+              <a href="#ever-learning" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">독서문화 행사 안내</a>
+              <a href="#ever-learning" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">평생교육 (에버러닝)</a>
+            </div>
+          </div>
+
+          <div class="relative group">
+            <button class="flex items-center gap-1 hover:text-teal-600 py-2">
+              열린 공간 <i data-lucide="chevron-down" class="h-4 w-4"></i>
+            </button>
+            <div class="absolute top-full left-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-xl p-3 w-48 hidden group-hover:block">
+              <a href="#notice-board" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">도서관 공지사항</a>
+              <button onclick="openModal('slogan-modal')" class="block w-full text-left px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">슬로건 공모전</button>
+            </div>
+          </div>
+
+          <div class="relative group">
+            <button class="flex items-center gap-1 hover:text-teal-600 py-2">
+              도서관 안내 <i data-lucide="chevron-down" class="h-4 w-4"></i>
+            </button>
+            <div class="absolute top-full left-0 mt-1 bg-white border border-slate-100 shadow-xl rounded-xl p-3 w-48 hidden group-hover:block">
+              <a href="#info" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">이용시간 및 휴관일</a>
+              <a href="#map" class="block px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-50">오시는 길</a>
+            </div>
+          </div>
+
+          <a href="#my-library" class="hover:text-teal-600 py-2">마이 라이브러리</a>
+        </nav>
+
+        <div id="header-auth-area" class="flex items-center space-x-4">
+          </div>
+      </div>
+    </div>
+  </header>
+
+  <div id="login-modal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative border border-slate-100">
+      <button id="login-close-btn" onclick="closeModal('login-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="h-6 w-6"></i>
+      </button>
+      
+      <div class="mb-5 text-center">
+        <div class="mx-auto w-12 h-12 rounded-2xl bg-teal-50 flex items-center justify-center mb-3">
+          <i data-lucide="smartphone" class="h-6 w-6 text-teal-600"></i>
+        </div>
+        <h3 class="text-lg font-extrabold text-slate-900">비대면 정회원 통합인증 로그인</h3>
+        <p class="text-xs text-slate-500 mt-1">
+          행정안전부 주민등록 정보 연계를 통하여 별도 서류 제출 없이 자동으로 서울시민 자격을 인증 및 가입합니다.
+        </p>
+      </div>
+
+      <div id="login-step-none">
+        <form id="login-form" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">이름(실명)</label>
+            <input type="text" id="login-user-name" required placeholder="홍길동" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition text-sm text-slate-800 font-medium" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">주민등록번호 앞자리</label>
+            <input type="text" id="login-ssn" required maxlength="6" placeholder="980101" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none transition text-sm text-slate-800 font-medium" oninput="this.value = this.value.replace(/[^0-10-9]/g, '')" />
+            <p class="text-[11px] text-indigo-600 font-medium mt-1">💡 시뮬레이션 규칙: 마지막 자리가 짝수면 서울시민 성공, 홀수면 실패!</p>
+          </div>
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 flex items-start space-x-2.5">
+            <i data-lucide="info" class="h-4 w-4 text-indigo-500 mt-0.5 flex-shrink-0"></i>
+            <p class="text-[11px] text-slate-500 leading-relaxed">
+              입력하신 고유식별정보는 본인인증 및 자격검증 목적으로 정부망에 즉시 조회되며 도서관 데이터베이스에 저장되지 않습니다.
+            </p>
+          </div>
+
+          <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 px-4 rounded-xl transition duration-150 shadow-lg shadow-teal-600/10">
+            간편 비대면 정회원인증 시작
+          </button>
+        </form>
+      </div>
+
+      <div id="login-step-verifying" class="py-6 flex flex-col items-center justify-center space-y-4 hidden">
+        <div class="relative flex items-center justify-center">
+          <i data-lucide="refresh-cw" class="h-12 w-12 text-teal-600 animate-spin"></i>
+          <i data-lucide="shield-check" class="h-5 w-5 text-indigo-600 absolute"></i>
+        </div>
+        <div class="text-center w-full px-4">
+          <p id="verify-status-title" class="text-sm font-bold text-slate-700">행정안전부 주민등록 정보 연계 중...</p>
+          <p id="verify-status-desc" class="text-xs text-slate-400 mt-0.5">보안 연계 토큰 발행 및 통신 세션 수립 중</p>
+          
+          <div class="w-full bg-slate-100 h-2 rounded-full mt-4 overflow-hidden border border-slate-200">
+            <div id="verify-progress-bar" class="bg-gradient-to-r from-teal-500 to-indigo-600 h-full w-0 transition-all duration-300 ease-out"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="login-step-verified" class="py-12 flex flex-col items-center justify-center space-y-4 text-center hidden">
+        <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 animate-bounce">
+          <i data-lucide="check" class="h-6 w-6 stroke-[3]"></i>
+        </div>
+        <div>
+          <p class="text-base font-extrabold text-slate-800">서울 시민 자격 인증 완료!</p>
+          <p class="text-xs text-slate-500 mt-1 font-medium bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full border border-emerald-100 inline-block">행안부 검증 결과: 서울시 종로구 주소지 확인</p>
+        </div>
+        <p class="text-xs text-slate-400">청운도서관 디지털 정회원 자격이 성공적으로 활성화되었습니다.</p>
+      </div>
+
+      <div id="login-step-failed" class="py-8 flex flex-col items-center justify-center space-y-4 text-center hidden">
+        <div class="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-rose-600">
+          <i data-lucide="alert-triangle" class="h-6 w-6 stroke-[2]"></i>
+        </div>
+        <div>
+          <p class="text-base font-extrabold text-slate-800">정회원 자격 인증 불일치</p>
+          <p class="text-xs text-slate-500 mt-1 font-medium bg-rose-50 text-rose-700 px-3 py-1 rounded-full border border-rose-100 inline-block">행안부 검증 결과: 타 시·도 거주자 판명</p>
+        </div>
+        <p class="text-xs text-slate-400 max-w-[280px] leading-relaxed">
+          청운도서관 비대면 가입은 <strong>서울시민</strong> 전용 서비스입니다. 타 지역 거주민은 도서관 방문 후 재직/재학 증명서 확인 절차가 필요합니다.
+        </p>
+        <button onclick="resetLoginStep()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-md">
+          주민번호 앞자리 변경하여 다시 시도하기
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="bg-gradient-to-b from-indigo-950 via-slate-900 to-indigo-950 text-white py-16 px-4 relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-96 h-96 bg-teal-600/10 rounded-full blur-3xl"></div>
+    <div class="absolute bottom-0 left-0 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
+
+    <div class="max-w-4xl mx-auto text-center relative z-10">
+      <span class="bg-teal-500/10 text-teal-400 px-3 py-1 rounded-full text-xs font-bold tracking-wider uppercase mb-4 inline-block border border-teal-500/20">
+        도서 통합 스마트 검색 시스템
+      </span>
+      <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 leading-tight">
+        원하는 지식을 바로 청운하세요
+      </h2>
+      <p class="text-slate-300 text-sm md:text-base max-w-xl mx-auto mb-8 font-medium">
+        도서뿐만 아니라 연속간행물, 비도서 자료까지 한 번에 검색이 가능한 스마트 도서 관제 허브입니다.
+      </p>
+
+      <div class="bg-slate-800/60 p-1.5 rounded-2xl max-w-2xl mx-auto flex space-x-1 border border-slate-700 backdrop-blur-md mb-4">
+        <button onclick="setSearchTab('통합검색')" id="tab-통합검색" class="search-tab-btn flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition bg-teal-600 text-white shadow-md">통합검색</button>
+        <button onclick="setSearchTab('도서')" id="tab-도서" class="search-tab-btn flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition text-slate-300 hover:text-white hover:bg-slate-700/50">도서</button>
+        <button onclick="setSearchTab('비도서')" id="tab-비도서" class="search-tab-btn flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition text-slate-300 hover:text-white hover:bg-slate-700/50">비도서</button>
+        <button onclick="setSearchTab('간행물')" id="tab-간행물" class="search-tab-btn flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition text-slate-300 hover:text-white hover:bg-slate-700/50">간행물</button>
+      </div>
+
+      <form onsubmit="handleSearch(event)" class="max-w-2xl mx-auto flex items-center bg-white rounded-2xl shadow-xl overflow-hidden p-1 border border-slate-200">
+        <div class="pl-4 text-slate-400">
+          <i data-lucide="search" class="h-5 w-5"></i>
+        </div>
+        <input type="text" id="search-input" placeholder="청운도서관 통합검색 내 도서명, 저자, 출판사를 바로 검색하세요." class="w-full pl-3 pr-4 py-3.5 text-sm md:text-base text-slate-800 outline-none placeholder-slate-400 font-medium" />
+        <button type="submit" class="bg-indigo-700 hover:bg-indigo-800 text-white font-bold px-6 py-3 rounded-xl text-sm transition-all flex items-center gap-1.5 shrink-0">
+          검색하기
+        </button>
+      </form>
+
+      <div class="flex justify-center items-center gap-2 mt-4 text-xs text-slate-400">
+        <span class="font-semibold text-slate-300">인기 검색어:</span>
+        <button type="button" onclick="quickKeywordSearch('인공지능')" class="hover:text-teal-400 hover:underline">#인공지능</button>
+        <button type="button" onclick="quickKeywordSearch('리액트')" class="hover:text-teal-400 hover:underline">#리액트</button>
+        <button type="button" onclick="quickKeywordSearch('트렌드 2026')" class="hover:text-teal-400 hover:underline">#트렌드 2026</button>
+        <button type="button" onclick="quickKeywordSearch('환경 에세이')" class="hover:text-teal-400 hover:underline">#환경 에세이</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="search-results-section" class="bg-white border-b border-slate-200 py-12 px-4 shadow-inner hidden">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+          <i data-lucide="book-open" class="text-teal-600"></i>
+          청운 도서 검색 결과 (<span id="search-results-count">0</span>건)
+        </h3>
+        <button onclick="closeSearchResults()" class="text-xs text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1">
+          결과 닫기 <i data-lucide="x" class="h-4 w-4"></i>
+        </button>
+      </div>
+
+      <div id="search-results-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        </div>
+    </div>
+  </section>
+
+  <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 -mt-6 relative z-20">
+    <div class="bg-white rounded-3xl shadow-xl p-6 border border-slate-150 grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+      
+      <button onclick="openModal('slogan-modal')" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-teal-50 hover:text-teal-700 transition duration-150 group">
+        <div class="bg-teal-50 text-teal-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="award" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">슬로건 공모</span>
+      </button>
+
+      <a href="#reading-room" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-indigo-50 hover:text-indigo-700 transition duration-150 group">
+        <div class="bg-indigo-50 text-indigo-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="clock" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">자율학습실 예약</span>
+      </a>
+
+      <a href="#digital-pc" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-sky-50 hover:text-sky-700 transition duration-150 group">
+        <div class="bg-sky-50 text-sky-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="monitor" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">디지털석 예약</span>
+      </a>
+
+      <a href="#ever-learning" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-amber-50 hover:text-amber-700 transition duration-150 group">
+        <div class="bg-amber-50 text-amber-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="calendar" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">에버러닝 접수</span>
+      </a>
+
+      <button onclick="handleQuickExtend()" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-emerald-50 hover:text-emerald-700 transition duration-150 group">
+        <div class="bg-emerald-50 text-emerald-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">대출 연기</span>
+      </button>
+
+      <button onclick="openModal('hope-book-modal')" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-purple-50 hover:text-purple-700 transition duration-150 group">
+        <div class="bg-purple-50 text-purple-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="plus" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">희망도서 신청</span>
+      </button>
+
+      <a href="#info" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-rose-50 hover:text-rose-700 transition duration-150 group">
+        <div class="bg-rose-50 text-rose-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="info" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">이용 안내</span>
+      </button>
+
+      <a href="#qna" onclick="handleMockQna()" class="flex flex-col items-center justify-center p-4 rounded-2xl hover:bg-fuchsia-50 hover:text-fuchsia-700 transition duration-150 group">
+        <div class="bg-fuchsia-50 text-fuchsia-600 p-3.5 rounded-xl mb-3 group-hover:scale-105 transition-transform">
+          <i data-lucide="file-text" class="h-5 w-5"></i>
+        </div>
+        <span class="text-xs font-extrabold tracking-tight">도서관에바란다</span>
+      </a>
+
+    </div>
+  </section>
+
+  <section id="reading-room" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+      
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <span class="text-[10px] font-bold text-teal-600 uppercase tracking-widest bg-teal-50 px-2.5 py-1 rounded-full">
+                REAL-TIME STATUS
+              </span>
+              <h3 class="text-lg font-extrabold text-slate-900 mt-1.5 flex items-center gap-2">
+                <i data-lucide="clock" class="text-teal-600 h-5 w-5"></i>
+                제1자율학습실 좌석 현황
+              </h3>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold text-teal-600">
+                잔여 <span id="reading-seats-left">0</span>석 / 총 24석
+              </p>
+            </div>
+          </div>
+
+          <div id="reading-seats-grid" class="grid grid-cols-6 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+            </div>
+        </div>
+
+        <div class="mt-4 flex justify-between items-center text-[11px] text-slate-500 bg-slate-50/50 p-3 rounded-xl">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-white border border-slate-300 rounded"></span> 예약 가능</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-slate-200 rounded"></span> 이미 배정 완료</span>
+          <span class="font-semibold text-teal-600">※ 모바일 회원증 즉시 인증 후 자동 발권 연계</span>
+        </div>
+      </div>
+
+      <div id="digital-pc" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <span class="text-[10px] font-bold text-indigo-600 uppercase tracking-widest bg-indigo-50 px-2.5 py-1 rounded-full">
+                DIGITAL RESERVATION
+              </span>
+              <h3 class="text-lg font-extrabold text-slate-900 mt-1.5 flex items-center gap-2">
+                <i data-lucide="monitor" class="text-indigo-600 h-5 w-5"></i>
+                디지털 자료실 예약 서비스
+              </h3>
+            </div>
+            <div class="text-right">
+              <p class="text-xs font-bold text-indigo-600">
+                배정가능 <span id="digital-pc-left">0</span>석 / 총 8석
+              </p>
+            </div>
+          </div>
+
+          <div id="digital-pc-grid" class="grid grid-cols-4 gap-4 bg-slate-50 p-6 rounded-2xl border border-slate-100">
+            </div>
+        </div>
+
+        <div class="mt-4 flex justify-between items-center text-[11px] text-slate-500 bg-slate-50/50 p-3 rounded-xl">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-white border border-slate-300 rounded"></span> 예약대기</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 bg-indigo-50 border border-indigo-100 rounded"></span> 사용중</span>
+          <span class="font-semibold text-indigo-600">※ 예약 시 1회 최대 2시간 이용 한도</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div id="seat-modal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+      <h3 class="text-lg font-extrabold text-slate-900 mb-2">자율학습실 좌석 예약 신청</h3>
+      <p class="text-sm text-slate-600 mb-4">
+        <strong>제1자율학습실 <span id="target-seat-num">0</span>번</strong> 좌석의 사용을 신청하시겠습니까?
+      </p>
+      <div class="flex space-x-3">
+        <button onclick="closeModal('seat-modal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition">
+          취소
+        </button>
+        <button onclick="confirmSeatReservation()" class="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-sm transition">
+          예약 완료
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="pc-modal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 shadow-2xl relative">
+      <h3 class="text-lg font-extrabold text-slate-900 mb-2">디지털 자료실 PC 배정</h3>
+      <p class="text-sm text-slate-600 mb-4">
+        <strong>디지털자료실 PC <span id="target-pc-num">0</span>번</strong> 기기를 바로 점유 배정하시겠습니까?
+      </p>
+      <div class="flex space-x-3">
+        <button onclick="closeModal('pc-modal')" class="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition">
+          취소
+        </button>
+        <button onclick="confirmPCReservation()" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-sm transition">
+          배정 확정
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <section class="bg-slate-100/50 py-12 border-t border-b border-slate-200/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <div id="ever-learning" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-150 flex flex-col justify-between">
+          <div>
+            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+              <i data-lucide="calendar" class="text-amber-600 h-5 w-5"></i>
+              평생교육 에버러닝 접수
+            </h3>
+            <div id="programs-container" class="space-y-4">
+              </div>
+          </div>
+          <button onclick="triggerAlert('에버러닝 수강신청 통합 허브로 새 창 연계 지원 예정.', 'info')" class="w-full mt-5 bg-amber-50 hover:bg-amber-100 text-amber-800 text-xs font-bold py-3 rounded-xl transition">
+            문화강좌 전체보기 →
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-150 flex flex-col justify-between lg:col-span-2">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+                <i data-lucide="award" class="text-teal-600 h-5 w-5"></i>
+                시민 참여형 청운 슬로건 공모 피드
+              </h3>
+              <button onclick="openModal('slogan-modal')" class="text-xs bg-teal-600 hover:bg-teal-700 text-white font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                <i data-lucide="plus" class="h-3.5 w-3.5"></i> 슬로건 등록
+              </button>
+            </div>
+
+            <div id="slogans-feed" class="space-y-3.5 max-h-[290px] overflow-y-auto pr-1">
+              </div>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-100 text-center text-xs text-slate-400">
+            올해의 슬로건은 심사를 거쳐 청운도서관 정문 전면 현수막에 게시될 예정입니다.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <div id="slogan-modal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal('slogan-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="h-6 w-6"></i>
+      </button>
+      <h3 class="text-lg font-extrabold text-slate-900 mb-1">슬로건 공모전 제출 양식</h3>
+      <p class="text-xs text-slate-400 mb-4">청운도서관만의 정취와 어울리는 독서 문구를 제안해주세요.</p>
+      
+      <form id="slogan-form" onsubmit="handleSloganSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">Ref</label>
+          <textarea id="slogan-input-text" required maxlength="40" rows="3" placeholder="예시) 과거를 품은 인왕산의 정원, 오늘을 읽는 청운도서관" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium"></textarea>
+        </div>
+
+        <div id="slogan-author-block">
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">제안자 별명</label>
+          <input type="text" id="slogan-input-author" placeholder="별명 혹은 닉네임" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium" />
+        </div>
+
+        <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 rounded-xl transition text-sm">
+          제안 등록 완료
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <section id="my-library" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      
+      <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 lg:col-span-2 flex flex-col justify-between">
+        <div>
+          <div class="flex justify-between items-center mb-5">
+            <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <i data-lucide="user" class="text-indigo-600 h-5 w-5"></i>
+              나의 청운 라이브러리 (대출조회/연기)
+            </h3>
+            <span id="library-status-badge" class="text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded">
+              자격인증 후 이용가능
+            </span>
+          </div>
+
+          <div id="my-library-content">
+            </div>
+        </div>
+
+        <div id="library-mobile-card" class="mt-6 bg-indigo-50/60 rounded-2xl p-4 border border-indigo-100 flex items-center gap-3 hidden">
+          <i data-lucide="smartphone" class="h-8 w-8 text-indigo-600 flex-shrink-0"></i>
+          <div>
+            <h4 class="text-xs font-bold text-indigo-900">모바일 디지털 도서 대출증 발급완료</h4>
+            <p id="library-card-id" class="text-[11px] text-indigo-700 font-medium mt-0.5">회원코드: CU-2026-09418 (청운 안내 데스크 즉시 사용)</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="notice-board" class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col justify-between">
+        <div>
+          <h3 class="text-lg font-extrabold text-slate-900 flex items-center gap-2 mb-4">
+            <i data-lucide="file-text" class="text-teal-600 h-5 w-5"></i>
+            도서관 공지 및 규정 공개
+          </h3>
+
+          <div class="space-y-4">
+            <a href="#notice-board" onclick="triggerAlert('본문 보기 링크 연결 준비 중.', 'info')" class="block group">
+              <span class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">공지사항</span>
+              <h4 class="text-xs font-bold text-slate-800 mt-1 line-clamp-1 group-hover:text-teal-600">2026 청운 야외 독서마당 행사 인원 모집의 건</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5">2026.06.01</p>
+            </a>
+
+            <a href="#notice-board" onclick="triggerAlert('본문 보기 링크 연결 준비 중.', 'info')" class="block group pt-3.5 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">운영규정</span>
+              <h4 class="text-xs font-bold text-slate-800 mt-1 line-clamp-1 group-hover:text-indigo-600">종합 자료실 장서 대출 한도 규정 일부 개정 안내</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5">2026.05.28</p>
+            </a>
+
+            <a href="#notice-board" onclick="triggerAlert('본문 보기 링크 연결 준비 중.', 'info')" class="block group pt-3.5 border-t border-slate-100">
+              <span class="text-[10px] font-bold text-teal-600 bg-teal-50 px-2 py-0.5 rounded">공지사항</span>
+              <h4 class="text-xs font-bold text-slate-800 mt-1 line-clamp-1 group-hover:text-teal-600">하계 전력 수급에 따른 학습실 냉방 탄력 운영제 시행</h4>
+              <p class="text-[10px] text-slate-400 mt-0.5">2026.05.25</p>
+            </a>
+          </div>
+        </div>
+
+        <button onclick="triggerAlert('공지사항 및 규정 아카이브 통합 페이지로 연결됩니다.', 'info')" class="w-full mt-6 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-bold py-3 rounded-xl border border-slate-200 transition">
+          도서관 소식 아카이브 →
+        </button>
+      </div>
+
+    </div>
+  </section>
+
+  <div id="hope-book-modal" class="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+      <button onclick="closeModal('hope-book-modal')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+        <i data-lucide="x" class="h-6 w-6"></i>
+      </button>
+      <h3 class="text-lg font-extrabold text-slate-900 mb-1">희망도서 신청서</h3>
+      <p class="text-xs text-slate-400 mb-4">읽고 싶은 도서가 도서관에 없는 경우 신청해주십시오.</p>
+      
+      <form id="hope-book-form" onsubmit="handleHopeBookSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">도서명</label>
+          <input type="text" id="hope-book-input-title" required placeholder="예) 리액트 프로그래밍 기법" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5">저자명</label>
+          <input type="text" id="hope-book-input-author" required placeholder="예) 김수정 지음" class="w-full px-3 py-2.5 rounded-xl border border-slate-200 outline-none focus:ring-2 focus:ring-teal-500 text-sm font-medium" />
+        </div>
+
+        <button type="submit" class="w-full bg-indigo-700 hover:bg-indigo-800 text-white font-bold py-3 rounded-xl transition text-sm shadow-md">
+          도서 구매 신청서 제출
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <footer id="info" class="bg-slate-900 text-slate-400 text-xs py-12 px-4 mt-auto border-t border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <h4 class="text-white font-extrabold text-sm mb-3">청운도서관</h4>
+          <p class="leading-relaxed text-[11px]">
+            서울특별시 종로구 자하문로36길 40<br />
+            대표전화: 02-730-7744<br />
+            인터넷 제보 및 공익 신고 연동제 지원
+          </p>
+        </div>
+        <div>
+          <h4 class="text-white font-extrabold text-sm mb-3">실시간 이용 안내</h4>
+          <p class="leading-relaxed text-[11px]">
+            <strong>자료실 운영</strong>: 평일 09:00 ~ 22:00 / 주말 09:00 ~ 17:00<br />
+            <strong>자율학습실</strong>: 하계(3월~10월) 07:00 ~ 23:00 / 동계 08:00 ~ 23:00<br />
+            <strong>정기휴관일</strong>: 매월 첫째, 셋째 수요일 / 국가공휴일
+          </p>
+        </div>
+        <div>
+          <h4 class="text-white font-extrabold text-sm mb-3">개인정보 처리 위탁 및 기술 지원</h4>
+          <p class="leading-relaxed text-[11px]">
+            비대면 주민 정보 대조망: 행정안전부 연계 유효성 통신 규격 준수<br />
+            통합 라이브러리 프론트엔드 파트 가상 프로토타입 v2.6.0
+          </p>
+        </div>
+        <div id="map">
+          <h4 class="text-white font-extrabold text-sm mb-3">찾아오시는 길</h4>
+          <p class="leading-relaxed text-[11px] mb-2">
+            경복궁역 3번 출구에서 지선버스 환승 후 자하문고개 하차 도보 5분
+          </p>
+          <div class="w-full h-24 bg-slate-800 rounded-xl flex items-center justify-center text-[10px] text-slate-500 border border-slate-700">
+            <i data-lucide="map-pin" class="h-4 w-4 mr-1 text-teal-500"></i>
+            <span>서울 종로구 자하문로36길 40 [지도 정보 연동]</span>
+          </div>
+        </div>
+      </div>
+      <div class="pt-8 border-t border-slate-800 text-center text-[11px] text-slate-600">
+        <p>© 2026 Cheongun Public Library Prototype App. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // 가상 데이터 세트
+    const INITIAL_BOOKS = [
+      { id: 1, title: "트렌드 코리아 2026", author: "김난도", publisher: "미래의창", type: "도서", year: "2025", status: "대출가능", cover: "📚" },
+      { id: 2, title: "AI 시대의 인간법학", author: "정채연", publisher: "법문사", type: "도서", year: "2026", status: "대출중", cover: "📖" },
+      { id: 3, title: "HTML5 & CSS3 웹 표준 가이드", author: "고경희", publisher: "이지스퍼블리싱", type: "도서", year: "2024", status: "대출가능", cover: "💻" },
+      { id: 4, title: "내셔널 지오그래픽 한국판", author: "편집부", publisher: "YBM", type: "간행물", year: "2026", status: "대출가능", cover: "🌍" },
+      { id: 5, title: "클래식 명곡 가이드 (오디오북)", author: "이현우", publisher: "소리미디어", type: "비도서", year: "2023", status: "대출중", cover: "💿" },
+      { id: 6, title: "모던 자바스크립트 Deep Dive", author: "이웅모", publisher: "위키북스", type: "도서", year: "2020", status: "대출가능", cover: "📙" }
+    ];
+
+    const INITIAL_PROGRAMS = [
+      { id: 1, title: "2026 상반기 인문학 인큐베이터", target: "일반 성인", date: "2026.07.02 ~ 07.30", status: "접수중", image: "✍️" },
+      { id: 2, title: "어린이 코딩 및 독서 토론 캠프", target: "초등 3~6학년", date: "2026.07.15 ~ 07.18", status: "대기접수", image: "🤖" },
+      { id: 3, title: "에버러닝: 실버 세대를 위한 스마트폰 정복기", target: "65세 이상", date: "2026.07.10 ~ 08.14", status: "접수중", image: "📱" }
+    ];
+
+    // 글로벌 통합 상태 관리 (State)
+    const state = {
+      isLoggedIn: false,
+      userProfile: null,
+      searchTab: '통합검색',
+      searchQuery: '',
+      searchResults: [],
+      hasSearched: false,
+      readingSeats: Array.from({ length: 24 }, (_, i) => ({
+        id: i + 1,
+        isOccupied: Math.random() > 0.4,
+        reservedBy: null
+      })),
+      digitalPC: Array.from({ length: 8 }, (_, i) => ({
+        id: i + 1,
+        isOccupied: Math.random() > 0.5,
+        reservedBy: null
+      })),
+      slogans: [
+        { id: 1, text: "책으로 여는 미래, 청운에서 피어나는 지혜", author: "청운러브", votes: 34, hasVoted: false },
+        { id: 2, text: "과거를 품은 인왕산의 정원, 오늘을 읽는 청운도서관", author: "한옥도서관", votes: 47, hasVoted: false },
+        { id: 3, text: "숨 가쁜 일상 속, 한 페이지의 숲을 만나다", author: "책사랑이", votes: 12, hasVoted: false }
+      ],
+      loans: [
+        { id: 101, title: "트렌드 코리아 2026", dueDate: "2026-06-11", extendCount: 0, returned: false },
+        { id: 102, title: "HTML5 & CSS3 웹 표준 가이드", dueDate: "2026-06-08", extendCount: 1, returned: false }
+      ],
+      hopeBooksList: [
+        { id: 1, title: "리액트 디자인 패턴과 모범 사례", author: "미켈레 베르톨리", date: "2026-06-02", status: "검토중" }
+      ],
+      selectedSeat: null,
+      selectedPC: null
+    };
+
+    // 알림 토스트 유틸리티
+    let alertTimeout;
+    function triggerAlert(message, type = 'success') {
+      const banner = document.getElementById('alert-banner');
+      const text = document.getElementById('alert-text');
+      
+      banner.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 border transition-all duration-300`;
+      
+      if (type === 'success') {
+        banner.classList.add('bg-teal-50', 'border-teal-200', 'text-teal-800');
+      } else if (type === 'error') {
+        banner.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+      } else {
+        banner.className = `fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3.5 rounded-xl shadow-2xl flex items-center space-x-3 border transition-all duration-300 bg-indigo-50 border-indigo-200 text-indigo-800`;
+      }
+      
+      text.innerText = message;
+      banner.classList.remove('hidden');
+      
+      clearTimeout(alertTimeout);
+      alertTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3500);
+    }
+
+    // 모달 상태 처리 제어
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+      if (modalId === 'slogan-modal') {
+        const authorBlock = document.getElementById('slogan-author-block');
+        if (state.isLoggedIn) {
+          authorBlock.classList.add('hidden');
+        } else {
+          authorBlock.classList.remove('hidden');
+        }
+      }
+      if (modalId === 'login-modal') {
+        resetLoginStep();
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    // 로그인 인터랙션 스텝 리셋 유틸리티
+    function resetLoginStep() {
+      document.getElementById('login-step-none').classList.remove('hidden');
+      document.getElementById('login-step-verifying').classList.add('hidden');
+      document.getElementById('login-step-verified').classList.add('hidden');
+      document.getElementById('login-step-failed').classList.add('hidden');
+      document.getElementById('login-close-btn').classList.remove('hidden');
+      document.getElementById('verify-progress-bar').style.width = '0%';
+    }
+
+    // 1. 헤더 로그인 컴포넌트 렌더링
+    function renderHeaderAuth() {
+      const area = document.getElementById('header-auth-area');
+      if (state.isLoggedIn) {
+        area.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <div class="hidden md:flex flex-col text-right">
+              <span class="text-sm font-bold text-slate-900">${state.userProfile.name}님</span>
+              <span class="text-[11px] text-teal-600 font-medium">${state.userProfile.userType}</span>
+            </div>
+            <div class="bg-slate-100 p-2 rounded-full cursor-pointer hover:bg-slate-200" onclick="triggerAlert('회원 정보 상세 보기 준비 중임.', 'info')">
+              <i data-lucide="user" class="h-5 w-5 text-slate-700"></i>
+            </div>
+            <button onclick="handleLogout()" class="flex items-center gap-1.5 bg-slate-100 hover:bg-red-50 hover:text-red-600 text-slate-600 px-4 py-2 rounded-xl text-xs font-semibold transition">
+              <i data-lucide="log-out" class="h-4 w-4"></i>로그아웃
+            </button>
+          </div>
+        `;
+      } else {
+        area.innerHTML = `
+          <button onclick="openModal('login-modal')" class="flex items-center gap-1.5 bg-gradient-to-r from-teal-600 to-indigo-700 hover:from-teal-700 hover:to-indigo-800 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md shadow-teal-600/10">
+            <i data-lucide="log-in" class="h-4 w-4"></i>통합 자격인증 로그인
+          </button>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    // 2. 비대면 주민등록 인증 로그인 실행 (행안부 시뮬레이션 인터랙션 고도화 완료)
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const userNameInput = document.getElementById('login-user-name');
+      const ssnInput = document.getElementById('login-ssn');
+      
+      const nameVal = userNameInput.value.trim();
+      const ssnVal = ssnInput.value.trim();
+
+      if (!nameVal) {
+        triggerAlert("실명을 올바르게 입력해야 합니다.", "error");
+        return;
+      }
+      if (ssnVal.length !== 6) {
+        triggerAlert("주민등록번호 앞자리 6자리를 완전히 채워주십시오.", "error");
+        return;
+      }
+
+      // 상태에 따른 가상 주민등록 확인 기획안 분기 (마지막 자리가 짝수면 서울시민, 홀수면 실패)
+      const lastDigit = parseInt(ssnVal.charAt(5));
+      const isSeoulCitizen = (lastDigit % 2 === 0);
+
+      // UI 상태 차단 및 로딩 노출
+      document.getElementById('login-step-none').classList.add('hidden');
+      document.getElementById('login-step-verifying').classList.remove('hidden');
+      document.getElementById('login-close-btn').classList.add('hidden'); // 검증 중 이탈 제한
+
+      const progressBar = document.getElementById('verify-progress-bar');
+      const statusTitle = document.getElementById('verify-status-title');
+      const statusDesc = document.getElementById('verify-status-desc');
+
+      // 실시간 인프라 패킷 연계 시뮬레이션 타임라인
+      setTimeout(() => {
+        progressBar.style.width = '35%';
+        statusTitle.innerText = "G-Cloud 정부인증망 보안 통신 연결 성공";
+        statusDesc.innerText = "행정안전부 고유식별정보 암호화 패킷 송수신 중...";
+        
+        setTimeout(() => {
+          progressBar.style.width = '70%';
+          statusTitle.innerText = "주민등록 행정정보 전산망 대조중";
+          statusDesc.innerText = `요청자 [${nameVal}] 거주지 원장 스캔 및 유효 회원증 판별 중...`;
+
+          setTimeout(() => {
+            progressBar.style.width = '100%';
+
+            setTimeout(() => {
+              document.getElementById('login-step-verifying').classList.add('hidden');
+              document.getElementById('login-close-btn').classList.remove('hidden');
+
+              if (isSeoulCitizen) {
+                // 성공 분기 시나리오
+                document.getElementById('login-step-verified').classList.remove('hidden');
+                
+                setTimeout(() => {
+                  state.isLoggedIn = true;
+                  state.userProfile = {
+                    name: nameVal,
+                    membershipCardId: "CU-2026-09418",
+                    userType: "서울시민 (인증완료)",
+                    joinedDate: "2026-06-04"
+                  };
+                  
+                  closeModal('login-modal');
+                  userNameInput.value = '';
+                  ssnInput.value = '';
+                  triggerAlert(`${nameVal}님, 비대면 정회원 자격인증 및 로그인이 완료되었습니다.`, "success");
+                  updateAllViews();
+                }, 1500);
+
+              } else {
+                // 실패 분기 시나리오
+                document.getElementById('login-step-failed').classList.remove('hidden');
+                triggerAlert("주소지 연계 결과가 서울시 정회원 기준과 맞지 않습니다.", "error");
+              }
+            }, 400);
+          }, 1200);
+        }, 1200);
+      }, 800);
+    }
+
+    function handleLogout() {
+      state.isLoggedIn = false;
+      state.userProfile = null;
+      triggerAlert("정상 로그아웃 처리되었습니다.", "info");
+      updateAllViews();
+    }
+
+    // 3. 도서 스마트 검색
+    function setSearchTab(tab) {
+      state.searchTab = tab;
+      const buttons = document.querySelectorAll('.search-tab-btn');
+      buttons.forEach(btn => {
+        if (btn.id === `tab-${tab}`) {
+          btn.className = "flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition bg-teal-600 text-white shadow-md";
+        } else {
+          btn.className = "flex-1 py-2 text-xs md:text-sm font-bold rounded-xl transition text-slate-300 hover:text-white hover:bg-slate-700/50";
+        }
+      });
+      
+      const input = document.getElementById('search-input');
+      input.placeholder = `청운도서관 ${tab} 내 도서명, 저자, 출판사를 바로 검색하세요.`;
+    }
+
+    function handleSearch(e) {
+      if (e) e.preventDefault();
+      const query = document.getElementById('search-input').value.trim();
+      state.searchQuery = query;
+
+      if (!query) {
+        state.searchResults = INITIAL_BOOKS;
+        state.hasSearched = true;
+        renderSearchResults();
+        return;
+      }
+
+      state.searchResults = INITIAL_BOOKS.filter(book => {
+        const matchQuery = book.title.toLowerCase().includes(query.toLowerCase()) || 
+                           book.author.toLowerCase().includes(query.toLowerCase()) ||
+                           book.publisher.toLowerCase().includes(query.toLowerCase());
+        
+        if (state.searchTab === '통합검색') return matchQuery;
+        return matchQuery && book.type === state.searchTab;
+      });
+
+      state.hasSearched = true;
+      renderSearchResults();
+    }
+
+    function quickKeywordSearch(word) {
+      document.getElementById('search-input').value = word;
+      handleSearch();
+    }
+
+    function triggerQuickSearch(tabName) {
+      setSearchTab(tabName);
+      document.getElementById('search-input').value = '';
+      state.searchQuery = '';
+      
+      if (tabName === '통합검색') {
+        state.searchResults = INITIAL_BOOKS;
+      } else {
+        state.searchResults = INITIAL_BOOKS.filter(book => book.type === tabName);
+      }
+      state.hasSearched = true;
+      renderSearchResults();
+      
+      const section = document.getElementById('search-results-section');
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function closeSearchResults() {
+      state.hasSearched = false;
+      document.getElementById('search-results-section').classList.add('hidden');
+    }
+
+    function renderSearchResults() {
+      const section = document.getElementById('search-results-section');
+      const grid = document.getElementById('search-results-grid');
+      const countSpan = document.getElementById('search-results-count');
+
+      if (!state.hasSearched) {
+        section.classList.add('hidden');
+        return;
+      }
+
+      section.classList.remove('hidden');
+      countSpan.innerText = state.searchResults.length;
+
+      if (state.searchResults.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full text-center py-12 bg-slate-50 rounded-2xl border border-slate-100">
+            <i data-lucide="alert-circle" class="h-8 w-8 text-slate-400 mx-auto mb-2"></i>
+            <p class="text-sm font-bold text-slate-600">입력 조건과 일치하는 청운 보관 도서가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1">철자나 키워드를 다시 확인해주시기 바랍니다.</p>
+          </div>
+        `;
+      } else {
+        grid.innerHTML = state.searchResults.map(book => `
+          <div class="bg-slate-50 rounded-2xl p-5 border border-slate-100 flex gap-4 hover:shadow-md transition">
+            <div class="w-16 h-20 bg-slate-200 rounded-xl flex items-center justify-center text-3xl shadow-sm">
+              ${book.cover}
+            </div>
+            <div class="flex-1 flex flex-col justify-between">
+              <div>
+                <span class="text-[10px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full uppercase">
+                  ${book.type}
+                </span>
+                <h4 class="text-sm font-bold text-slate-900 mt-1 line-clamp-1">${book.title}</h4>
+                <p class="text-xs text-slate-500 mt-0.5">${book.author} | ${book.publisher}</p>
+              </div>
+              <div class="flex justify-between items-center mt-3 pt-2 border-t border-slate-200/50">
+                <span class="text-xs font-bold ${book.status === '대출가능' ? 'text-teal-600' : 'text-rose-500'}">
+                  • ${book.status}
+                </span>
+                <button onclick="requestBookReservation('${book.title}')" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">
+                  예약 신청 →
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      }
+      lucide.createIcons();
+    }
+
+    function requestBookReservation(title) {
+      triggerAlert(`[${title}] 도서 대출 예약 신청이 정상적으로 완료되었습니다.`, 'success');
+    }
+
+    // 4. 자율학습실 예약 제어
+    function renderReadingSeats() {
+      const grid = document.getElementById('reading-seats-grid');
+      const leftSpan = document.getElementById('reading-seats-left');
+      
+      const leftCount = state.readingSeats.filter(s => !s.isOccupied).length;
+      leftSpan.innerText = leftCount;
+
+      grid.innerHTML = state.readingSeats.map(seat => `
+        <button onclick="handleSeatClick(${seat.id})" class="h-11 rounded-lg text-xs font-bold transition flex flex-col items-center justify-center border ${
+          seat.isOccupied 
+            ? 'bg-slate-200 text-slate-400 border-slate-200 cursor-not-allowed' 
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-teal-500 hover:text-white hover:border-teal-500 hover:shadow-md'
+        }">
+          <span>${seat.id}</span>
+          <span class="text-[9px] scale-90 font-medium">
+            ${seat.isOccupied ? "사용중" : "예약"}
+          </span>
+        </button>
+      `).join('');
+    }
+
+    function handleSeatClick(id) {
+      const seat = state.readingSeats.find(s => s.id === id);
+      if (seat.isOccupied) {
+        triggerAlert("이미 사용 중이거나 예약 완료된 좌석입니다.", "error");
+        return;
+      }
+      state.selectedSeat = seat;
+      document.getElementById('target-seat-num').innerText = id;
+      openModal('seat-modal');
+    }
+
+    function confirmSeatReservation() {
+      if (!state.isLoggedIn) {
+        triggerAlert("통합인증 및 비대면 주소 자격 확인을 먼저 완료해야 합니다.", "error");
+        closeModal('seat-modal');
+        openModal('login-modal');
+        return;
+      }
+
+      state.readingSeats = state.readingSeats.map(s => 
+        s.id === state.selectedSeat.id 
+          ? { ...s, isOccupied: true, reservedBy: state.userProfile.name } 
+          : s
+      );
+      
+      triggerAlert(`제1자율학습실 [${state.selectedSeat.id}번 좌석] 배정이 완료되었습니다.`, "success");
+      closeModal('seat-modal');
+      state.selectedSeat = null;
+      renderReadingSeats();
+    }
+
+    // 5. 디지털 자료실 PC 예약 제어
+    function renderDigitalPCs() {
+      const grid = document.getElementById('digital-pc-grid');
+      const leftSpan = document.getElementById('digital-pc-left');
+      
+      const leftCount = state.digitalPC.filter(p => !p.isOccupied).length;
+      leftSpan.innerText = leftCount;
+
+      grid.innerHTML = state.digitalPC.map(pc => `
+        <button onclick="handlePCClick(${pc.id})" class="h-16 rounded-xl text-xs font-bold transition flex flex-col items-center justify-center gap-1 border ${
+          pc.isOccupied 
+            ? 'bg-indigo-50/50 text-indigo-300 border-indigo-100 cursor-not-allowed' 
+            : 'bg-white text-slate-700 border-slate-200 hover:bg-indigo-600 hover:text-white hover:border-indigo-600 hover:shadow-md'
+        }">
+          <i data-lucide="monitor" class="h-4 w-4"></i>
+          <span>PC ${pc.id}</span>
+        </button>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function handlePCClick(id) {
+      const pc = state.digitalPC.find(p => p.id === id);
+      if (pc.isOccupied) {
+        triggerAlert("이미 사용 중인 기기 구역입니다.", "error");
+        return;
+      }
+      state.selectedPC = pc;
+      document.getElementById('target-pc-num').innerText = id;
+      openModal('pc-modal');
+    }
+
+    function confirmPCReservation() {
+      if (!state.isLoggedIn) {
+        triggerAlert("디지털 서비스는 도서관 회원인증이 선행되어야 합니다.", "error");
+        closeModal('pc-modal');
+        openModal('login-modal');
+        return;
+      }
+
+      state.digitalPC = state.digitalPC.map(p => 
+        p.id === state.selectedPC.id 
+          ? { ...p, isOccupied: true, reservedBy: state.userProfile.name } 
+          : p
+      );
+
+      triggerAlert(`디지털 자료실 [PC ${state.selectedPC.id}번] 구역 배정이 완료되었습니다.`, "success");
+      closeModal('pc-modal');
+      state.selectedPC = null;
+      renderDigitalPCs();
+    }
+
+    // 6. 에버러닝 프로그램 및 시민공모 슬로건 렌더링
+    function renderProgramsAndSlogans() {
+      // 프로그램 영역
+      const container = document.getElementById('programs-container');
+      container.innerHTML = INITIAL_PROGRAMS.map(prog => `
+        <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-100 flex items-start gap-3">
+          <span class="text-2xl">${prog.image}</span>
+          <div class="flex-1">
+            <div class="flex justify-between items-center">
+              <span class="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                ${prog.target}
+              </span>
+              <span class="text-[10px] font-extrabold ${prog.status === '접수중' ? 'text-teal-600' : 'text-slate-400'}">
+                ${prog.status}
+              </span>
+            </div>
+            <h4 class="text-sm font-bold text-slate-800 mt-1 line-clamp-1">${prog.title}</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">${prog.date}</p>
+          </div>
+        </div>
+      `).join('');
+
+      // 슬로건 영역
+      const slogansFeed = document.getElementById('slogans-feed');
+      slogansFeed.innerHTML = state.slogans.map(slogan => `
+        <div class="p-4 bg-slate-50/70 hover:bg-slate-50 rounded-2xl border border-slate-100 flex justify-between items-center gap-4 transition">
+          <div class="flex-1">
+            <p class="text-sm font-bold text-slate-800">" ${slogan.text} "</p>
+            <p class="text-[11px] text-slate-400 mt-1">제안 시민: ${slogan.author}</p>
+          </div>
+          <button onclick="handleSloganVote(${slogan.id})" class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition ${
+            slogan.hasVoted 
+              ? 'bg-rose-50 text-rose-600 border border-rose-200' 
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200 border border-transparent'
+          }">
+            <i data-lucide="heart" class="h-3.5 w-3.5 ${slogan.hasVoted ? 'fill-rose-600 text-rose-600' : 'text-slate-600'}"></i>
+            <span>추천 ${slogan.votes}</span>
+          </button>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    function handleSloganVote(id) {
+      state.slogans = state.slogans.map(item => {
+        if (item.id === id) {
+          const flag = !item.hasVoted;
+          return {
+            ...item,
+            hasVoted: flag,
+            votes: flag ? item.votes + 1 : item.votes - 1
+          };
+        }
+        return item;
+      });
+      renderProgramsAndSlogans();
+    }
+
+    function handleSloganSubmit(e) {
+      e.preventDefault();
+      const inputText = document.getElementById('slogan-input-text');
+      const inputAuthor = document.getElementById('slogan-input-author');
+
+      const textVal = inputText.value.trim();
+      if (!textVal) {
+        triggerAlert("슬로건 문구를 입력해 주십시오.", "error");
+        return;
+      }
+
+      const authorName = state.isLoggedIn ? state.userProfile.name : (inputAuthor.value.trim() || "익명");
+
+      const newEntry = {
+        id: state.slogans.length + 1,
+        text: textVal,
+        author: authorName,
+        votes: 0,
+        hasVoted: false
+      };
+
+      state.slogans.unshift(newEntry);
+      
+      inputText.value = '';
+      inputAuthor.value = '';
+      
+      closeModal('slogan-modal');
+      triggerAlert("시민 슬로건 제안 공모가 정상 등록되었습니다.", "success");
+      renderProgramsAndSlogans();
+    }
+
+    // 7. 마이 라이브러리 및 희망도서 연동
+    function renderMyLibrary() {
+      const content = document.getElementById('my-library-content');
+      const badge = document.getElementById('library-status-badge');
+      const mobileCard = document.getElementById('library-mobile-card');
+
+      if (!state.isLoggedIn) {
+        badge.innerText = "자격인증 후 이용가능";
+        badge.className = "text-xs font-bold text-rose-500 bg-rose-50 px-2 py-1 rounded";
+        mobileCard.classList.add('hidden');
+        
+        content.innerHTML = `
+          <div class="py-10 text-center bg-slate-50 rounded-2xl border border-slate-100/80 flex flex-col items-center justify-center">
+            <i data-lucide="alert-circle" class="h-8 w-8 text-slate-400 mb-2"></i>
+            <p class="text-sm font-bold text-slate-700">로그인 정보가 없습니다.</p>
+            <p class="text-xs text-slate-400 mt-1 max-w-[280px]">
+              비대면 정회원 통합인증 시스템을 거치면 실시간 대출 도서 목록 조회 및 즉시 연기가 가능합니다.
+            </p>
+            <button onclick="openModal('login-modal')" class="mt-4 bg-teal-600 hover:bg-teal-700 text-white font-bold px-5 py-2 rounded-xl text-xs transition">
+              통합인증 즉시 로그인
+            </button>
+          </div>
+        `;
+      } else {
+        badge.innerText = "정회원 전용";
+        badge.className = "text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded";
+        mobileCard.classList.remove('hidden');
+        document.getElementById('library-card-id').innerText = `회원코드: ${state.userProfile.membershipCardId} (청운 안내 데스크 즉시 사용)`;
+
+        const loansHTML = state.loans.map(loan => `
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <h4 class="text-sm font-extrabold text-slate-800">${loan.title}</h4>
+              <div class="flex gap-4 mt-1 text-[11px] text-slate-400">
+                <span>대출번호: ${loan.id}</span>
+                <span class="text-indigo-600 font-bold">반납예정일: ${loan.dueDate}</span>
+                <span class="text-slate-500 font-medium">연기 횟수: (${loan.extendCount}/2회)</span>
+              </div>
+            </div>
+            <button onclick="extendLoan(${loan.id})" ${loan.extendCount >= 2 ? 'disabled' : ''} class="text-xs font-bold py-2 px-3.5 rounded-xl border transition-all ${
+              loan.extendCount >= 2 
+                ? 'bg-slate-100 text-slate-300 border-slate-200 cursor-not-allowed' 
+                : 'bg-white text-indigo-700 border-indigo-200 hover:bg-indigo-50'
+            }">
+              기한 연기 (+7일)
+            </button>
+          </div>
+        `).join('');
+
+        const hopesHTML = state.hopeBooksList.map(book => `
+          <div class="flex justify-between items-center text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+            <div>
+              <span class="font-bold text-slate-700">${book.title}</span>
+              <span class="text-slate-400 ml-1">(${book.author})</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-[10px] text-slate-400">${book.date}</span>
+              <span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[10px]">
+                ${book.status}
+              </span>
+            </div>
+          </div>
+        `).join('');
+
+        content.innerHTML = `
+          <div class="space-y-4">
+            ${loansHTML}
+            
+            <div class="mt-6 pt-5 border-t border-slate-100">
+              <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">실시간 희망도서 구매 신청 이력</h4>
+              <div class="space-y-2">
+                ${hopesHTML}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+      lucide.createIcons();
+    }
+
+    function extendLoan(id) {
+      state.loans = state.loans.map(loan => {
+        if (loan.id === id) {
+          if (loan.extendCount >= 2) {
+            triggerAlert("최대 연기 가능 횟수(2회)를 초과하였습니다.", "error");
+            return loan;
+          }
+          const current = new Date(loan.dueDate);
+          current.setDate(current.getDate() + 7);
+          const newDateStr = current.toISOString().split('T')[0];
+          
+          triggerAlert(`[${loan.title}] 반납 예정일이 1주일 연장되었습니다.`, "success");
+          return {
+            ...loan,
+            dueDate: newDateStr,
+            extendCount: loan.extendCount + 1
+          };
+        }
+        return loan;
+      });
+      renderMyLibrary();
+    }
+
+    function handleQuickExtend() {
+      if (!state.isLoggedIn) {
+        triggerAlert("도서 기한 연장 서비스는 통합인증 로그인이 요구됩니다.", "error");
+        openModal('login-modal');
+        return;
+      }
+      const target = document.getElementById('my-library');
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function handleHopeBookSubmit(e) {
+      e.preventDefault();
+      const titleInput = document.getElementById('hope-book-input-title');
+      const authorInput = document.getElementById('hope-book-input-author');
+
+      const titleVal = titleInput.value.trim();
+      const authorVal = authorInput.value.trim();
+
+      if (!titleVal || !authorVal) {
+        triggerAlert("도서명과 저자명을 모두 상세하게 작성해주시기 바랍니다.", "error");
+        return;
+      }
+
+      const newRequest = {
+        id: state.hopeBooksList.length + 1,
+        title: titleVal,
+        author: authorVal,
+        date: new Date().toISOString().split('T')[0],
+        status: "신청 완료"
+      };
+
+      state.hopeBooksList.unshift(newRequest);
+      titleInput.value = '';
+      authorInput.value = '';
+      
+      closeModal('hope-book-modal');
+      triggerAlert("희망 도서 구매 신청서 접수가 정상적으로 수용되었습니다.", "success");
+      renderMyLibrary();
+    }
+
+    function handleMockQna() {
+      triggerAlert("이용자 건의 게시판 및 민원 센터로 이행 예정입니다.", "info");
+    }
+
+    // 전체 상태 변경 시 일괄 UI 렌더러
+    function updateAllViews() {
+      renderHeaderAuth();
+      renderReadingSeats();
+      renderDigitalPCs();
+      renderProgramsAndSlogans();
+      renderMyLibrary();
+    }
+
+    // 도서관 초기 기동 시점 실행문
+    window.onload = function() {
+      updateAllViews();
+    };
+  </script>
+</body>
+</html>
